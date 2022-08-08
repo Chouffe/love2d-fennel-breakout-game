@@ -5,7 +5,13 @@
   {:highlighted :play
    :assets {}})
 
+;; Used for poking at it via the REPL
 (global si state)
+
+(comment
+  ;; Change menu selection with the REPL
+  (set si.highlighted :high-scores)
+  (set si.highlighted :play))
 
 (comment
   (let [image (. si.assets.images :background)
