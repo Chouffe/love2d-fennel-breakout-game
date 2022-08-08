@@ -7,7 +7,6 @@
 
 (var scale 1)
 
-;; set the first mode
 (var (mode mode-name) nil)
 
 (comment
@@ -55,7 +54,8 @@
     (safely #(mode.update dt set-mode))))
 
 (fn love.keypressed [key]
-  (if (and (love.keyboard.isDown "lctrl" "rctrl" "capslock") (= key "q"))
+  (if (and (love.keyboard.isDown "lctrl" "rctrl" "capslock") 
+           (= key "q"))
       (love.event.quit)
       ;; add what each keypress should do in each mode
       (safely #(mode.keypressed key set-mode))))

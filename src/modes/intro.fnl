@@ -14,14 +14,7 @@
    ;; Getting the global variables for changing modes via the REPL
    _G
    (. _G :sm)
-   (. _G :modename)
-
-   ;; REPL for changing modes and threading data
-   (let [set-mode (. _G :sm)]
-      (set-mode :mode-two {:font-size 50}))
-
-   (let [set-mode (. _G :sm)]
-      (set-mode :mode-intro)))
+   (. _G :modename))
 
 {:draw (fn draw [message]
          (local (w h _flags) (love.window.getMode))
@@ -33,6 +26,8 @@
              :format (math.max 0 (- 3 time)))
           0 (- (/ h 2) 15) w :center))
  :update (fn update [dt set-mode]
+             (when (love.keyboard.wasPressed "a")
+                (print "a was pressed"))
              (if (< counter 65535)
                  (set counter (+ counter 1))
                  (set counter 0))
@@ -43,6 +38,5 @@
               (love.graphics.setNewFont 30)
               (print "Activating"))
  :keypressed (fn keypressed [key set-mode]
-                (global sm set-mode)
                 (when (= key :escape) 
                    (love.event.quit)))}
