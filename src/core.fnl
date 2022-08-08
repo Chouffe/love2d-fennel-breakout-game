@@ -15,6 +15,7 @@
 
    ;; REPL for changing modes and threading data
   (set-mode :intro)
+  (set-mode :start {:assets (assets.load-assets)})
   (set-mode :two {:font-size 10}))
 
 (fn set-mode [new-mode-name ...]
