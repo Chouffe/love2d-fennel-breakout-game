@@ -2,13 +2,18 @@
 (local config (require :src.config))
 
 (var state 
-  {:highlighted :play
+  {:debug true
+   :highlighted :play
    :assets {}})
 
 ;; Used for poking at it via the REPL
 (global si state)
 
 (comment
+  ;; Change debug rendering
+  (set si.debug false)
+  (set si.debug true)
+
   ;; Change menu selection with the REPL
   (set si.highlighted :high-scores)
   (set si.highlighted :play))
@@ -76,9 +81,8 @@
   (draw-background-image (. state.assets :images))
   (draw-title (. state.assets :fonts))
   (draw-menu (. state.assets :fonts) (. state :highlighted))
-  ; (love.graphics.setFont (. si.assets.fonts :large))
-  ; (love.graphics.printf "BREAKOUT" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center)
-  (debug.display-fps state.assets.fonts.small))
+  (when (. state :debug)
+    (debug.display-fps state.assets.fonts.small)))
 
 (fn update [dt set-mode])
 
@@ -96,6 +100,7 @@
     (do
       (: (. state.assets.sounds :paddle-hit) :play)
       (set state.highlighted :play))
+
     (= key :down)
     (do
       (: (. state.assets.sounds :paddle-hit) :play)
