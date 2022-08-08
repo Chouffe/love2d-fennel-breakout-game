@@ -1,4 +1,5 @@
 (local debug (require :src.debug))
+(local config (require :src.config))
 
 (var state {:assets {}})
 
@@ -13,7 +14,15 @@
 (fn draw-background-image [images]
   (let [background-image (. images :background)
         (width height) (background-image:getDimensions)]
-    (love.graphics.draw background-image 0 0 0 width height)))
+    (love.graphics.draw 
+      background-image 
+      ;; Draw at coordinates 0 0
+      0 0 
+      ;; No rotation
+      0 
+      ;; Scale factors on X and Y axis so that it fits the whole screen
+      (/ config.VIRTUAL_WIDTH (- width 1)) 
+      (/ config.VIRTUAL_HEIGHT (- height 1)))))
   
 (fn draw []
   (draw-background-image (. si.assets :images))

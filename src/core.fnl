@@ -1,6 +1,8 @@
 (local fennel (require :lib.fennel))
 (local repl (require :lib.stdio))
 (local assets (require :src.assets))
+(local push (require :lib.push))
+(local config (require :src.config))
 
 (local canvas 
   (let [(w h) (love.window.getMode)]
@@ -32,7 +34,15 @@
         (false msg) (print mode-name "activate error" msg)))))
 
 (fn love.load [args]
-  (canvas:setFilter "nearest" "nearest")
+  (love.graphics.setDefaultFilter "nearest" "nearest")
+  (push:setupScreen 
+    config.VIRTUAL_WIDTH 
+    config.VIRTUAL_HEIGHT 
+    config.WINDOW_WIDTH 
+    config.WINDOW_HEIGHT
+    {:vsync true
+     :fullscreen false
+     :resizable true})
   (let [loaded-assets (assets.load-assets)]
     (set-mode :start {:assets loaded-assets}))
   (when (~= :web (. args 1)) (repl.start)))
@@ -43,14 +53,19 @@
 (fn love.draw []
   ;; the canvas allows you to get sharp pixel-art style scaling; if you
   ;; don't want that, just skip that and call mode.draw directly.
-  (love.graphics.setCanvas canvas)
-  (love.graphics.clear)
-  (love.graphics.setColor 1 1 1)
+  (push:apply "start")
+  ; (love.graphics.setCanvas canvas)
+  ; (love.graphics.clear)
+  ; (love.graphics.setColor 1 1 1)
   (when (and (= "table" (type mode)) mode.update)
     (safely mode.draw))
-  (love.graphics.setCanvas)
-  (love.graphics.setColor 1 1 1)
-  (love.graphics.draw canvas 0 0 0 scale scale))
+  ; (love.graphics.setCanvas)
+  ; (love.graphics.setColor 1 1 1)
+  ; (love.graphics.draw canvas 0 0 0 scale scale)
+  (push:apply "end"))
+
+(fn love.resize [w h]
+  (push:resize w h))
 
 (fn love.update [dt]
   (when (and (= "table" (type mode)) mode.update)
