@@ -96,6 +96,9 @@
     (= key :escape)
     (love.event.quit)
 
+    (or (= key :enter) (= key :return))
+    (set-mode :play {:assets state.assets})
+
     (= key :up)
     (do
       (: (. state.assets.sounds :paddle-hit) :play)
