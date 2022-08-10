@@ -8,3 +8,4 @@ Topics covered:
 * Sprites and quads
 * Music
 * Assets loading
+* Neovim + Conjure setup
