@@ -6,12 +6,17 @@
 
 (var (mode mode-name) nil)
 
+
 (comment
   _G
 
-   ;; REPL for changing modes and threading data
-  (set-mode :intro)
-  (set-mode :start {:assets (assets.load-assets)}))
+  ;; Live reload from the REPL 
+  (let [set-mode (. _G :sm)
+        assets (require :src.assets)
+        mode-name :play 
+        ; mode-name :start 
+        args {:assets (assets.load-assets)}]
+    (set-mode mode-name args)))
 
 (fn set-mode [new-mode-name ...]
   (let [modes-path :src.modes.]
@@ -19,6 +24,9 @@
     (when mode.activate
       (match (pcall mode.activate ...)
         (false msg) (print mode-name "activate error" msg)))))
+
+;; For REPL dev
+(global sm set-mode)
 
 (fn love.load [args]
   (love.graphics.setDefaultFilter "nearest" "nearest")
