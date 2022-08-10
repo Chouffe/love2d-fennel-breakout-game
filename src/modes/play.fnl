@@ -98,6 +98,4 @@
       (set state.debug (not state.debug))
       (print (fennel.view state)))))
 
-
-
 {: draw : update : activate : keypressed}
