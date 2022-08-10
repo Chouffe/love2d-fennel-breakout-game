@@ -87,8 +87,8 @@
 (fn update [dt set-mode])
 
 (fn activate [{: assets}]
-  (assets.sounds.music:setLooping true)
-  (assets.sounds.music:play)
+  ; (assets.sounds.music:setLooping true)
+  ; (assets.sounds.music:play)
   (set state.assets assets))
 
 (fn keypressed [key set-mode]

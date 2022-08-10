@@ -1,12 +1,13 @@
 (local fennel (require :lib.fennel))
 
-(local debug (require :src.debug))
 (local config (require :src.config))
+(local debug (require :src.debug))
 (local quads (require :src.quads))
 
 (var state 
   {:debug true
-   :paddle {:skin :purple
+   :paused false
+   :paddle {:skin :blue
             :size-type :medium}
    :quads {}
    :assets {}})
@@ -51,19 +52,23 @@
       (/ (- config.VIRTUAL_WIDTH width) 2) 
       (- config.VIRTUAL_HEIGHT height bottom-margin))))
   
-(fn draw-arrows [images])
+(fn draw-arrows [{ : images : quads}])
+
+(fn draw-pause [fonts]
+  (love.graphics.setFont (. fonts :large))
+  (love.graphics.printf "Game paused" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center)
+  (love.graphics.setFont (. fonts :medium))
+  (love.graphics.printf "Press p to resume" 0 (+ (/ config.VIRTUAL_HEIGHT 3) 35) config.VIRTUAL_WIDTH :center))
 
 (fn draw []
-  ; (let [atlas (. state.assets.images :main)
-  ;       quad (. state.quads.blue :small)]
-  ;   ;; TODO: figure out how to draw a quad here
-  ;   (love.graphics.draw atlas quad 5 5)
-  ;   (love.graphics.draw atlas 5 5 0 (: atlas :getWidth) (: atlas :getHeight)))
   (draw-background-image (. state.assets :images))
+  (when state.paused
+    (draw-pause (. state.assets :fonts)))
   (draw-paddle {:images (. state.assets :images)
                 :paddle (. state :paddle)
                 :quads (. state :quads)})
-  ; (draw-arrows (. state.assets :images))
+  (draw-arrows {:images (. state.assets :images)
+                :quads (. state :quads)})
   (when (. state :debug)
     (debug.display-fps state.assets.fonts.small)))
 
@@ -77,14 +82,22 @@
 
 (fn keypressed [key set-mode]
   (if 
-    ;; Debugging
-    (= key "s")
-    (fennel.view state)
-
+    ;; Quit
     (= key :escape)
-    (love.event.quit)))
+    (love.event.quit)
 
-(comment
-  (. _G :sp))
+    ;; Pause
+    (= key "p")
+    (do
+      (: (. state.assets.sounds :pause) :play)
+      (set state.paused (not state.paused)))
+
+    ;; Debug
+    (= key "d")
+    (do
+      (set state.debug (not state.debug))
+      (print (fennel.view state)))))
+
+
 
 {: draw : update : activate : keypressed}
