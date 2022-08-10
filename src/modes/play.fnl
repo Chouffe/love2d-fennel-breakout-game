@@ -126,6 +126,7 @@
 (comment
   (. [1 2 3 4 5 6] 3)
   (length [1 2 3])
+  (lume.first [1 2 3])
   (lume.find [:a :b] :a)
   (lume.find [:a :b] :c))
 
