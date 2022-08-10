@@ -4,6 +4,9 @@
 (local debug (require :src.debug))
 (local quads (require :src.quads))
 
+(local paddle-color-order 
+  [:blue :green :red :purple])
+
 (var state 
   {:debug true
    :paused false
@@ -40,6 +43,10 @@
       ;; Scale factors on X and Y axis so that it fits the whole screen
       (/ config.VIRTUAL_WIDTH (- width 1)) 
       (/ config.VIRTUAL_HEIGHT (- height 1)))))
+
+(fn draw-title [ {: fonts}]
+  (love.graphics.setFont (. fonts :medium))
+  (love.graphics.printf "Select your paddle and press Enter" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center))
 
 (fn draw-paddle [{: paddle : images : quads}]
   (let [{: size-type : skin} paddle 
@@ -87,6 +94,7 @@
   (draw-background-image (. state.assets :images))
   (when state.paused
     (draw-pause (. state.assets :fonts)))
+  (draw-title {:fonts state.assets.fonts})
   (draw-paddle {:images (. state.assets :images)
                 :paddle (. state :paddle)
                 :quads (. state :quads)})
@@ -104,11 +112,35 @@
     (set state.quads loaded-quads))
   (set state.assets assets))
 
+(fn next-paddle-color [paddle-color-order current-color]
+  (let [maybe-index (lume.find paddle-color-order current-color)]
+    (if 
+      (= maybe-index nil)
+      (lume.first paddle-color-order)
+
+      (= (length paddle-color-order) maybe-index) 
+      (lume.first paddle-color-order)
+
+      (. paddle-color-order (+ maybe-index 1)))))
+  
+(comment
+  (. [1 2 3 4 5 6] 3)
+  (length [1 2 3])
+  (lume.find [:a :b] :a)
+  (lume.find [:a :b] :c))
+
 (fn keypressed [key set-mode]
   (if 
     ;; Quit
     (= key :escape)
     (love.event.quit)
+
+    (= key "right")
+    (set state.paddle.skin 
+         (next-paddle-color paddle-color-order state.paddle.skin))
+
+    (= key "left")
+    (print "TODO")
 
     ;; Pause
     (= key "p")
