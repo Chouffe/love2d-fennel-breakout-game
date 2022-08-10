@@ -8,7 +8,9 @@
   {:debug true
    :paused false
    :paddle {:skin :blue
-            :size-type :medium}
+            ; :size-type :medium
+            :size-type :x-large}
+            
    :quads {}
    :assets {}})
 
@@ -44,7 +46,7 @@
         atlas (. images :main)
         quad (. (. quads.paddles skin) size-type)
         (_ _ width height) (: quad :getViewport)
-        bottom-margin 20]
+        bottom-margin 40]
     (love.graphics.draw 
       atlas 
       quad 
@@ -52,7 +54,28 @@
       (/ (- config.VIRTUAL_WIDTH width) 2) 
       (- config.VIRTUAL_HEIGHT height bottom-margin))))
   
-(fn draw-arrows [{ : images : quads}])
+(fn draw-arrows [{ : images : quads}]
+  (let [atlas (. images :arrows)
+        left-quad (. quads.arrows :left)
+        right-quad (. quads.arrows :right)
+        (_ _ width height) (: left-quad :getViewport)
+        bottom-margin 40
+        side-margin 75]
+    (love.graphics.draw 
+      atlas 
+      left-quad 
+      ;; Center middle the paddle using its width and height
+      side-margin
+      (- config.VIRTUAL_HEIGHT height bottom-margin))
+    (love.graphics.draw 
+      atlas 
+      right-quad 
+      ;; Center middle the paddle using its width and height
+      (- config.VIRTUAL_WIDTH width side-margin)
+      (- config.VIRTUAL_HEIGHT height bottom-margin))))
+
+(comment
+  (+ 1 2))
 
 (fn draw-pause [fonts]
   (love.graphics.setFont (. fonts :large))
@@ -76,7 +99,8 @@
 
 (fn activate [{: assets}]
   (let [atlas (. assets.images :main)
-        loaded-quads {:paddles (quads.paddles atlas)}]
+        loaded-quads {:arrows (quads.arrows (. assets.images :arrows))
+                      :paddles (quads.paddles (. assets.images :main))}]
     (set state.quads loaded-quads))
   (set state.assets assets))
 

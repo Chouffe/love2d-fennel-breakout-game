@@ -31,16 +31,25 @@
                   {skin (skin->paddles { : atlas : skin : offset})}))
       (lume.reduce lume.merge)))
 
+(fn arrows [atlas]
+  {:left (love.graphics.newQuad 0 0 24 24 (: atlas :getDimensions))
+   :right (love.graphics.newQuad 24 0 24 24 (: atlas :getDimensions))})
+
 (comment
 
-  (let [atlas (love.graphics.newImage "assets/images/breakout.png")
-        quads (paddles atlas)]
+  (let [
+        ; atlas (love.graphics.newImage "assets/images/breakout.png")
+        atlas (love.graphics.newImage "assets/images/arrows.png")
+        ; quads (paddles atlas)
+        quads (arrows atlas)]
         ; quad (. quads.blue :small)
         ; (w h) (: quads.blue.small :getTextureDimensions)]
     ; (love.graphics.draw atlas quad 5 5)
-    quads))
+    quads
+    (: (. quads :left) :getViewport)))
+    ; (lume.map quads (fn [quad] (: quad :getViewport)))))
     ; (. quads.blue :small)
     ; (: quads.blue.small :getTextureDimensions)
     ; [w h]))
 
-{: paddles}
+{ : paddles : arrows}
