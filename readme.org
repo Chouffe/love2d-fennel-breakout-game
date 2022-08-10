@@ -1,2 +1,0 @@
-# Breakout game from CS50 implemented in fennel with Love
-
