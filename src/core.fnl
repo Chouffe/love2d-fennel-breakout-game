@@ -20,6 +20,8 @@
   (let [mode-path (.. :src.modes. mode-name)
         args {:assets loaded-assets}]
     (lume.hotswap mode-path)
+    ;; TODO: add all files that could have changed
+    (lume.hotswap :src.quads)
     (set-mode mode-name args)))
 
 (fn love.load [args]

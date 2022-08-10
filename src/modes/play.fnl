@@ -6,15 +6,14 @@
 
 (var state 
   {:debug true
-   :paddle {:skin :blue
-            :size-type :small}
+   :paddle {:skin :purple
+            :size-type :medium}
    :quads {}
    :assets {}})
 
 (global sp state)
 
 (comment
-  sp
   _G
   (. _G :sp)
 
@@ -43,8 +42,14 @@
   (let [{: size-type : skin} paddle 
         atlas (. images :main)
         quad (. (. quads.paddles skin) size-type)
-        (_ _ w h) (: quad :getViewport)]
-    (love.graphics.draw atlas quad (/ (- config.VIRTUAL_WIDTH w) 2) (- config.VIRTUAL_HEIGHT h 10))))
+        (_ _ width height) (: quad :getViewport)
+        bottom-margin 20]
+    (love.graphics.draw 
+      atlas 
+      quad 
+      ;; Center middle the paddle using its width and height
+      (/ (- config.VIRTUAL_WIDTH width) 2) 
+      (- config.VIRTUAL_HEIGHT height bottom-margin))))
   
 (fn draw-arrows [images])
 
