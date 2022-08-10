@@ -15,6 +15,26 @@
 (comment
   _G
 
+  (let [modes-path :src.modes
+        mode-path (.. modes-path :start)
+        set-mode (fn set-mode [new-mode-name ...]
+                   (let [modes-path :src.modes.
+                         mode-path (.. modes-path new-mode-name)]
+                     (lume.hotswap mode-path)
+                     (global mode (require mode-path))
+                     (global modename new-mode-name)
+                     (when mode.activate
+                       (match (pcall mode.activate ...)
+                         (false msg) (print modename "activate error" msg)))))
+        assets (require :src.assets)
+        loaded-assets (assets.load-assets)
+        mode-name :start 
+        args {:assets loaded-assets}]
+    (lume.hotswap mode-path)
+    (set-mode :start args)
+    (set-mode mode-name args)
+    loaded-assets)
+
   ;; Live reload from the REPL 
   (let [set-mode (fn set-mode [new-mode-name ...]
                    (let [modes-path :src.modes.
@@ -35,7 +55,9 @@
 
 ;; REPL driven dev
 (fn set-mode [new-mode-name ...]
-  (let [modes-path :src.modes.]
+  (let [modes-path :src.modes.
+        mode-path (.. modes-path new-mode-name)]
+    (lume.hotswap mode-path)
     (global mode (require (.. modes-path new-mode-name)))
     (global modename new-mode-name)
     (when mode.activate
@@ -43,6 +65,11 @@
         (false msg) (print modename "activate error" msg)))))
 
 (global setmode set-mode)
+
+(fn live-reload-mode [mode-name loaded-assets]
+  (let [mode-name (. _G :modename)
+        args {:assets loaded-assets}]
+    (set-mode mode-name args)))
 
 ;; Non REPL driven dev
 ; (fn set-mode [new-mode-name ...]
@@ -92,25 +119,14 @@
 
 (fn love.keypressed [key]
   (print (.. ">>> key pressed: " key))
-  ; (when (= "h" key)
-  ;   (print ">>> Mode name: ")
-  ;   (print (. _G :mod-name)))
-    ; (let [name (.. "src.mode." (. _G :mod-name))]
-    ;   (let [old (require name)
-    ;         _ (tset package.loaded name nil)
-    ;         new (require name)]
-    ;     (when (= (type new) :table)
-    ;       (each [k v (pairs new)]
-    ;         (tset old k v))
-    ;       (each [k v (pairs old)]
-    ;         (when (not (. new k))
-    ;           (tset old k nil)))
-    ;       (print "Hotswap!")
-    ;       (tset package.loaded name old)))))
 
   (if 
     (and (love.keyboard.isDown "lctrl" "rctrl" "capslock") (= key "q"))
     (love.event.quit)
+
+    (= key "r")
+    (let [loaded-assets (assets.load-assets)]
+      (live-reload-mode (. _G :modename) loaded-assets))
 
     ;; add what each keypress should do in each mode
     (safely #(mode.keypressed key set-mode))))
