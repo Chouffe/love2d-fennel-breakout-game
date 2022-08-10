@@ -72,8 +72,8 @@
   ;; REPL driven for hot reloading a mode
   ;; 1. First evaluate the whole buffer
   ;; 2. Evaluate the s-expression below
+  (let [mode-name :play
   ;; 3. Iterate quickly on the draw function or update logic
-  (let [mode-name :start
         loaded-assets (assets.load-assets)]
     (live-reload-mode mode-name loaded-assets)))
 
