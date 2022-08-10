@@ -3,30 +3,57 @@
 (local assets (require :src.assets))
 (local push (require :lib.push))
 (local config (require :src.config))
+(local lume (require :lib.lume))
 
-(var (mode mode-name) nil)
+;; Non REPL driven dev
+; (var (mode mode-name) nil)
 
+;; For REPL dev
+(global mode nil)
+(global modename nil)
 
 (comment
   _G
 
   ;; Live reload from the REPL 
-  (let [set-mode (. _G :sm)
+  (let [set-mode (fn set-mode [new-mode-name ...]
+                   (let [modes-path :src.modes.
+                         mode-path (.. modes-path new-mode-name)]
+                     (lume.hotswap mode-path)
+                     (global mode (require mode-path))
+                     (global modename new-mode-name)
+                     (when mode.activate
+                       (match (pcall mode.activate ...)
+                         (false msg) (print modename "activate error" msg)))))
         assets (require :src.assets)
-        mode-name :play 
-        ; mode-name :start 
-        args {:assets (assets.load-assets)}]
-    (set-mode mode-name args)))
+        loaded-assets (assets.load-assets)
+        mode-name :start 
+        args {:assets loaded-assets}]
+    (set-mode :start args)
+    (set-mode mode-name args)
+    loaded-assets))
 
+;; REPL driven dev
 (fn set-mode [new-mode-name ...]
   (let [modes-path :src.modes.]
-    (set (mode mode-name) (values (require (.. modes-path new-mode-name)) new-mode-name))
+    (global mode (require (.. modes-path new-mode-name)))
+    (global modename new-mode-name)
     (when mode.activate
       (match (pcall mode.activate ...)
-        (false msg) (print mode-name "activate error" msg)))))
+        (false msg) (print modename "activate error" msg)))))
 
-;; For REPL dev
-(global sm set-mode)
+(global setmode set-mode)
+
+;; Non REPL driven dev
+; (fn set-mode [new-mode-name ...]
+;   (let [modes-path :src.modes.]
+;     (set (mode mode-name) (values (require (.. modes-path new-mode-name)) new-mode-name))
+;     (when mode.activate
+;       (match (pcall mode.activate ...)
+;         (false msg) (print mode-name "activate error" msg)))))
+
+; ;; For REPL dev
+; (global sm set-mode)
 
 (fn love.load [args]
   (love.graphics.setDefaultFilter "nearest" "nearest")
@@ -42,8 +69,13 @@
     (set-mode :start {:assets loaded-assets}))
   (when (~= :web (. args 1)) (repl.start)))
 
+;; REPL Driven dev
 (fn safely [f]
-  (xpcall f #(set-mode :error mode-name $ (fennel.traceback))))
+  (xpcall f #(set-mode :error modename $ (fennel.traceback))))
+
+;; Non REPL Driven dev
+; (fn safely [f]
+;   (xpcall f #(set-mode :error mode-name $ (fennel.traceback))))
 
 (fn love.draw []
   (push:apply "start")
@@ -59,8 +91,33 @@
     (safely #(mode.update dt set-mode))))
 
 (fn love.keypressed [key]
-  (if (and (love.keyboard.isDown "lctrl" "rctrl" "capslock") 
-           (= key "q"))
-      (love.event.quit)
-      ;; add what each keypress should do in each mode
-      (safely #(mode.keypressed key set-mode))))
+  (print (.. ">>> key pressed: " key))
+  ; (when (= "h" key)
+  ;   (print ">>> Mode name: ")
+  ;   (print (. _G :mod-name)))
+    ; (let [name (.. "src.mode." (. _G :mod-name))]
+    ;   (let [old (require name)
+    ;         _ (tset package.loaded name nil)
+    ;         new (require name)]
+    ;     (when (= (type new) :table)
+    ;       (each [k v (pairs new)]
+    ;         (tset old k v))
+    ;       (each [k v (pairs old)]
+    ;         (when (not (. new k))
+    ;           (tset old k nil)))
+    ;       (print "Hotswap!")
+    ;       (tset package.loaded name old)))))
+
+  (if 
+    (and (love.keyboard.isDown "lctrl" "rctrl" "capslock") (= key "q"))
+    (love.event.quit)
+
+    ;; add what each keypress should do in each mode
+    (safely #(mode.keypressed key set-mode))))
+
+; (print (fennel.view {:hello-world "hello" :hello_word "hello"}))
+
+; (global hello-world "hello")
+; (global hello+world "hello")
+; (global hello_world "hello")
+; (global helloworld "hello")
