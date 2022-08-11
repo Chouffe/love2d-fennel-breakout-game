@@ -1,4 +1,4 @@
-(import-macros {: incf} :sample-macros)
+(import-macros {: incf} :src.sample-macros)
 
 (var counter 0)
 (var time 0)
