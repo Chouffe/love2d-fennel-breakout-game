@@ -97,7 +97,7 @@
     (love.event.quit)
 
     (or (= key :enter) (= key :return))
-    (set-mode :play {:assets state.assets})
+    (set-mode :select-paddle {:assets state.assets})
 
     (= key :up)
     (do
