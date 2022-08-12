@@ -3,6 +3,7 @@
 (local config (require :src.config))
 (local debug (require :src.debug))
 (local quads (require :src.quads))
+(local hitbox (require :src.hitbox))
 
 (local paddle-color-order 
   [:blue :green :red :purple])
@@ -124,14 +125,18 @@
                   (lume.clamp 0 (- config.VIRTUAL_WIDTH width)))]
     (set state.paddle.position.x new-x)))
 
+(+ 1 2)
+
 (fn update-ball [dt]
-  (let [{: ball : quads} state
+  (let [{: ball : quads : paddle} state
         {: position} ball
         {: width : height} (ball-dimensions {:ball ball :quads quads})
         {: x : y : dx : dy} position
+        pad-dim (paddle-dimensions {:paddle paddle :quads quads})
         wall-margin 1
         new-x (+ x (* dx dt)) 
         new-y (+ y (* dy dt)) 
+        ;; Collision detection with wall
         new-dx (if 
                  (<= new-x wall-margin) 
                  (- 0 dx) 
@@ -140,10 +145,17 @@
                  (- 0 dx)
 
                  dx) 
+        is-paddle-collision (hitbox.collides 
+                              {:x state.paddle.position.x :y state.paddle.position.y :width pad-dim.width :height pad-dim.height}
+                              {:x x :y y :width width :height height})
+        ;; TODO: handle collision with paddle here
         new-dy (if (<= new-y wall-margin) (- 0 dy) dy)
         clamped-new-x (lume.clamp new-x wall-margin (- config.VIRTUAL_WIDTH width))
         clamped-new-y (lume.clamp new-y wall-margin (+ config.VIRTUAL_HEIGHT height wall-margin))
         new-position {:x clamped-new-x :y clamped-new-y :dx new-dx :dy new-dy}]
+    ;; FOR debugging
+    (if is-paddle-collision
+      (print ">>> collision"))
     (set state.ball.position new-position)))
 
 (fn update [dt]
