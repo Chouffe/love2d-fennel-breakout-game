@@ -24,15 +24,14 @@
    :paused false
    :paddle {:skin :blue
             :size-type :medium}
-            ; :size-type :x-large}
    :quads {}
    :assets {}})
 
-(global sp state)
+(global ssp state)
 
 (comment
   _G
-  (. _G :sp)
+  (. _G :ssp)
 
   (let [atlas (. _G.sp.assets.images :main)]
     (quads.paddles atlas)
@@ -127,9 +126,7 @@
 (fn update [dt set-mode])
 
 (fn activate [{: assets}]
-  (let [atlas (. assets.images :main)
-        loaded-quads {:arrows (quads.arrows (. assets.images :arrows))
-                      :paddles (quads.paddles (. assets.images :main))}]
+  (let [loaded-quads (quads.load-quads (. assets :images))] 
     (set state.quads loaded-quads))
   (set state.assets assets))
 
@@ -145,6 +142,11 @@
     ;; Quit
     (= key :escape)
     (love.event.quit)
+
+    (or (= key :enter) (= key :return))
+    (set-mode :play {:assets state.assets
+                     :quads state.quads
+                     :paddle state.paddle})
 
     ;; TODO: add the sound effect
     (= key "right")

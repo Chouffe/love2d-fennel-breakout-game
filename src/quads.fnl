@@ -35,7 +35,16 @@
   {:left (love.graphics.newQuad 0 0 24 24 (: atlas :getDimensions))
    :right (love.graphics.newQuad 24 0 24 24 (: atlas :getDimensions))})
 
+(fn load-quads [images]
+  {:paddles (paddles (. images :main))
+   :arrows (arrows (. images :arrows))})
+
 (comment
+
+  (let [assets (require :src.assets) 
+        loaded-assets (assets.load-assets)
+        loaded-quads (load-quads (. loaded-assets :images))]
+    loaded-quads)
 
   (let [
         ; atlas (love.graphics.newImage "assets/images/breakout.png")
@@ -52,4 +61,4 @@
     ; (: quads.blue.small :getTextureDimensions)
     ; [w h]))
 
-{ : paddles : arrows}
+{: load-quads}

@@ -4,25 +4,47 @@
 (local repl (require :lib.stdio))
 
 (local assets (require :src.assets))
+(local quads (require :src.quads))
 (local config (require :src.config))
 
 (var (mode mode-name) nil)
 
-(fn set-mode [new-mode-name ...]
+(fn set-mode [new-mode-name args]
   (let [modes-path :src.modes.
         mode-path (.. modes-path new-mode-name)]
     (set (mode mode-name) (values (require (.. modes-path new-mode-name)) new-mode-name))
     (when mode.activate
-      (match (pcall mode.activate ...)
+      (match (pcall mode.activate args)
         (false msg) (print mode-name "activate error" msg)))))
 
-(fn live-reload-mode [mode-name loaded-assets]
-  (let [mode-path (.. :src.modes. mode-name)
-        args {:assets loaded-assets}]
+(+ 1 2)
+(fn live-reload-mode [mode-name args]
+  (let [mode-path (.. :src.modes. mode-name)]
     (lume.hotswap mode-path)
     ;; TODO: add all files that could have changed
     (lume.hotswap :src.quads)
+    (lume.hotswap :src.assets)
     (set-mode mode-name args)))
+
+(fn mode-name->default-args [mode-name]
+  (let [loaded-assets (assets.load-assets)
+        loaded-quads (quads.load-quads (. loaded-assets :images))]
+    (if
+      (= mode-name :play)
+      (let [default-paddle {:skin :blue :size-type :medium}]
+        {:assets loaded-assets
+         :quads loaded-quads
+         :paddle default-paddle})
+    
+      (= mode-name :select-paddle)
+      {:assets loaded-assets
+       :quads loaded-quads}
+
+      (= mode-name :start)
+      {:assets loaded-assets
+       :quads loaded-quads}
+      
+      {})))
 
 (fn love.load [args]
   (love.graphics.setDefaultFilter "nearest" "nearest")
@@ -63,19 +85,27 @@
 
     ;; Hot reload the current mode using a shortcut
     (= key "r")
-    (let [loaded-assets (assets.load-assets)]
-      (live-reload-mode mode-name loaded-assets))
+    (let [args (mode-name->default-args mode-name)]
+      (print (fennel.view args))
+      (live-reload-mode mode-name args))
 
     ;; add what each keypress should do in each mode
     (safely #(mode.keypressed key set-mode))))
 
 
+(+ 1 2)
+
 (comment 
   ;; REPL driven for hot reloading a mode
   ;; 1. First evaluate the whole buffer
   ;; 2. Evaluate the s-expression below
-  (let [mode-name :play
   ;; 3. Iterate quickly on the draw function or update logic
-        loaded-assets (assets.load-assets)]
-    (live-reload-mode mode-name loaded-assets)))
-
+  (let [mode-name :play
+        loaded-assets (assets.load-assets)
+        loaded-quads (quads.load-quads (. loaded-assets :images))
+        default-paddle {:skin :blue
+                        :size-type :medium}
+        args {:assets loaded-assets
+              :quads loaded-quads
+              :paddle default-paddle}]
+    (live-reload-mode mode-name args)))

@@ -44,46 +44,31 @@
       (/ config.VIRTUAL_WIDTH (- width 1)) 
       (/ config.VIRTUAL_HEIGHT (- height 1)))))
 
-(fn draw-title [ {: fonts}]
-  (love.graphics.setFont (. fonts :medium))
-  (love.graphics.printf "Select your paddle and press Enter" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center))
+(comment
+  (+ 1 2))
+
+;; TODO: move this to the paddle namespace
+(fn paddle-dimensions [{: paddle : quads}]
+  (let [{: size-type : skin : position } paddle 
+        quad (. (. quads.paddles skin) size-type)
+        (_ _ width height) (: quad :getViewport)]
+    {:width width :height height}))
 
 (fn draw-paddle [{: paddle : images : quads}]
-  (let [{: size-type : skin} paddle 
+  (let [{: size-type : skin : position} paddle 
+        {: x : y} position
+        {: width : height} (paddle-dimensions {:paddle paddle :quads quads})
         atlas (. images :main)
-        quad (. (. quads.paddles skin) size-type)
-        (_ _ width height) (: quad :getViewport)
-        bottom-margin 40]
+        quad (. (. quads.paddles skin) size-type)]
     (love.graphics.draw 
       atlas 
       quad 
       ;; Center middle the paddle using its width and height
-      (/ (- config.VIRTUAL_WIDTH width) 2) 
-      (- config.VIRTUAL_HEIGHT height bottom-margin))))
+      x
+      y)))
+      ; (/ (- config.VIRTUAL_WIDTH width) 2) 
+      ; (- config.VIRTUAL_HEIGHT height bottom-margin))))
   
-(fn draw-arrows [{ : images : quads}]
-  (let [atlas (. images :arrows)
-        left-quad (. quads.arrows :left)
-        right-quad (. quads.arrows :right)
-        (_ _ width height) (: left-quad :getViewport)
-        bottom-margin 40
-        side-margin 75]
-    (love.graphics.draw 
-      atlas 
-      left-quad 
-      ;; Center middle the paddle using its width and height
-      side-margin
-      (- config.VIRTUAL_HEIGHT height bottom-margin))
-    (love.graphics.draw 
-      atlas 
-      right-quad 
-      ;; Center middle the paddle using its width and height
-      (- config.VIRTUAL_WIDTH width side-margin)
-      (- config.VIRTUAL_HEIGHT height bottom-margin))))
-
-(comment
-  (+ 1 2))
-
 (fn draw-pause [fonts]
   (love.graphics.setFont (. fonts :large))
   (love.graphics.printf "Game paused" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center)
@@ -94,54 +79,31 @@
   (draw-background-image (. state.assets :images))
   (when state.paused
     (draw-pause (. state.assets :fonts)))
-  (draw-title {:fonts state.assets.fonts})
   (draw-paddle {:images (. state.assets :images)
                 :paddle (. state :paddle)
-                :quads (. state :quads)})
-  (draw-arrows {:images (. state.assets :images)
                 :quads (. state :quads)})
   (when (. state :debug)
     (debug.display-fps state.assets.fonts.small)))
 
 (fn update [dt set-mode])
 
-(fn activate [{: assets}]
-  (let [atlas (. assets.images :main)
-        loaded-quads {:arrows (quads.arrows (. assets.images :arrows))
-                      :paddles (quads.paddles (. assets.images :main))}]
-    (set state.quads loaded-quads))
+(fn activate [{: assets : quads : paddle}]
+  (set state.paddle paddle)
+  (let [{: width : height} (paddle-dimensions {:paddle paddle :quads quads})
+        default-paddle-position {:x (/ (- config.VIRTUAL_WIDTH width) 2) 
+                                 :y (- config.VIRTUAL_HEIGHT height)}]
+    (set state.paddle.position default-paddle-position))
+  (set state.quads quads)
   (set state.assets assets))
 
-(fn next-paddle-color [paddle-color-order current-color]
-  (let [maybe-index (lume.find paddle-color-order current-color)]
-    (if 
-      (= maybe-index nil)
-      (lume.first paddle-color-order)
-
-      (= (length paddle-color-order) maybe-index) 
-      (lume.first paddle-color-order)
-
-      (. paddle-color-order (+ maybe-index 1)))))
-  
 (comment
-  (. [1 2 3 4 5 6] 3)
-  (length [1 2 3])
-  (lume.first [1 2 3])
-  (lume.find [:a :b] :a)
-  (lume.find [:a :b] :c))
+  (+ 1 2))
 
 (fn keypressed [key set-mode]
   (if 
     ;; Quit
     (= key :escape)
     (love.event.quit)
-
-    (= key "right")
-    (set state.paddle.skin 
-         (next-paddle-color paddle-color-order state.paddle.skin))
-
-    (= key "left")
-    (print "TODO")
 
     ;; Pause
     (= key "p")
