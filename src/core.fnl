@@ -101,11 +101,5 @@
   ;; 2. Evaluate the s-expression below
   ;; 3. Iterate quickly on the draw function or update logic
   (let [mode-name :play
-        loaded-assets (assets.load-assets)
-        loaded-quads (quads.load-quads (. loaded-assets :images))
-        default-paddle {:skin :blue
-                        :size-type :medium}
-        args {:assets loaded-assets
-              :quads loaded-quads
-              :paddle default-paddle}]
+        args (mode-name->default-args mode-name)]
     (live-reload-mode mode-name args)))
