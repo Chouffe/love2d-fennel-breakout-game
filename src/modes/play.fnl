@@ -7,11 +7,11 @@
 (local paddle-color-order 
   [:blue :green :red :purple])
 
-(var state 
+(global state 
   {:debug true
    :paused false
    :ball {:skin :blue
-          :position {:x 80 :y 80 :dx -30 :dy 20}}
+          :position {:x 80 :y 80 :dx -20 :dy -30}}
    :paddle {:skin :blue
             :speed 200
             :size-type :medium}
@@ -127,14 +127,16 @@
 (fn update-ball [dt]
   (let [{: ball : quads} state
         {: position} ball
-        {: width} (ball-dimensions {:ball ball :quads quads})
+        {: width : height} (ball-dimensions {:ball ball :quads quads})
         {: x : y : dx : dy} position
-        ;; TODO: handle collisions and walls
-        new-dx dx
-        new-dy dy
-        new-x (+ x (* dx dt))
-        new-y (+ y (* dy dt))
-        new-position {:x new-x :y new-y :dx new-dx :dy new-dy}]
+        wall-margin 1
+        new-x (+ x (* dx dt)) 
+        new-y (+ y (* dy dt)) 
+        new-dx (if (<= new-x wall-margin) (- 0 dx) dx) 
+        new-dy (if (<= new-y wall-margin) (- 0 dy) dy)
+        clamped-new-x (lume.clamp new-x wall-margin 1000)
+        clamped-new-y (lume.clamp new-y wall-margin 1000)
+        new-position {:x clamped-new-x :y clamped-new-y :dx new-dx :dy new-dy}]
     (set state.ball.position new-position)))
 
 (fn update [dt]
