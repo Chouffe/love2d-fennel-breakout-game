@@ -11,7 +11,7 @@
   {:debug true
    :paused false
    :ball {:skin :blue
-          :position {:x 80 :y 80 :dx -20 :dy -30}}
+          :position {:x 80 :y 80 :dx 200 :dy -100}}
    :paddle {:skin :blue
             :speed 200
             :size-type :medium}
@@ -132,10 +132,17 @@
         wall-margin 1
         new-x (+ x (* dx dt)) 
         new-y (+ y (* dy dt)) 
-        new-dx (if (<= new-x wall-margin) (- 0 dx) dx) 
+        new-dx (if 
+                 (<= new-x wall-margin) 
+                 (- 0 dx) 
+
+                 (>= new-x (- config.VIRTUAL_WIDTH width wall-margin))
+                 (- 0 dx)
+
+                 dx) 
         new-dy (if (<= new-y wall-margin) (- 0 dy) dy)
-        clamped-new-x (lume.clamp new-x wall-margin 1000)
-        clamped-new-y (lume.clamp new-y wall-margin 1000)
+        clamped-new-x (lume.clamp new-x wall-margin (- config.VIRTUAL_WIDTH width))
+        clamped-new-y (lume.clamp new-y wall-margin (+ config.VIRTUAL_HEIGHT height wall-margin))
         new-position {:x clamped-new-x :y clamped-new-y :dx new-dx :dy new-dy}]
     (set state.ball.position new-position)))
 
