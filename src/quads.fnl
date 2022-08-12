@@ -31,12 +31,29 @@
                   {skin (skin->paddles { : atlas : skin : offset})}))
       (lume.reduce lume.merge)))
 
+(fn balls [atlas]
+  (-> [{:skin :blue :offset [96 48]}
+       {:skin :green :offset [104 48]}
+       {:skin :red :offset [120 48]}]
+      (lume.map (fn [{: skin : offset}]
+                  (let [[x y] offset]
+                    {skin (love.graphics.newQuad x y 8 8 (: atlas :getDimensions))})))
+      (lume.reduce lume.merge)))
+
+(comment
+  (let [assets (require :src.assets) 
+        loaded-assets (assets.load-assets)
+        loaded-balls (balls (. loaded-assets.images :main))]
+    loaded-assets
+    loaded-balls))
+
 (fn arrows [atlas]
   {:left (love.graphics.newQuad 0 0 24 24 (: atlas :getDimensions))
    :right (love.graphics.newQuad 24 0 24 24 (: atlas :getDimensions))})
 
 (fn load-quads [images]
-  {:paddles (paddles (. images :main))
+  {:balls (balls (. images :main))
+   :paddles (paddles (. images :main))
    :arrows (arrows (. images :arrows))})
 
 (comment

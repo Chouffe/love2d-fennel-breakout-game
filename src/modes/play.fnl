@@ -10,6 +10,8 @@
 (var state 
   {:debug true
    :paused false
+   :ball {:skin :blue
+          :position {:x 80 :y 80 :dx 30 :dy 50}}
    :paddle {:skin :blue
             :speed 200
             :size-type :medium}
@@ -59,12 +61,23 @@
         (_ _ width height) (: quad :getViewport)]
     {:width width :height height}))
 
+(fn ball-dimensions [{: ball : quads}]
+  {:width 8 :height 8})
+
 (fn draw-paddle [{: paddle : images : quads}]
   (let [{: size-type : skin : position} paddle 
         {: x : y} position
         {: width : height} (paddle-dimensions {:paddle paddle :quads quads})
         atlas (. images :main)
         quad (. (. quads.paddles skin) size-type)]
+    (love.graphics.draw atlas quad x y)))
+
+(fn draw-ball [{: ball : images : quads}]
+  (let [{: skin : position} ball 
+        {: x : y} position
+        {: width : height} (ball-dimensions {:ball ball :quads quads})
+        atlas (. images :main)
+        quad (. quads.balls skin)]
     (love.graphics.draw atlas quad x y)))
   
 (fn draw-pause [fonts]
@@ -80,9 +93,13 @@
   (draw-paddle {:images (. state.assets :images)
                 :paddle (. state :paddle)
                 :quads (. state :quads)})
+  (draw-ball {:images (. state.assets :images)
+              :ball (. state :ball)
+              :quads (. state :quads)})
   (when (. state :debug)
     (debug.display-fps state.assets.fonts.small)))
 
+;; TODO: move to a paddle namespace?
 (fn handle-keyboard [{: x : speed : dt : key}]
   (if 
     (= key :left)
