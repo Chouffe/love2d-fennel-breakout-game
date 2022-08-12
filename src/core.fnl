@@ -17,7 +17,6 @@
       (match (pcall mode.activate args)
         (false msg) (print mode-name "activate error" msg)))))
 
-(+ 1 2)
 (fn live-reload-mode [mode-name args]
   (let [mode-path (.. :src.modes. mode-name)]
     (lume.hotswap mode-path)
@@ -92,8 +91,6 @@
     ;; add what each keypress should do in each mode
     (safely #(mode.keypressed key set-mode))))
 
-
-(+ 1 2)
 
 (comment 
   ;; REPL driven for hot reloading a mode
