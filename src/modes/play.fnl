@@ -11,7 +11,7 @@
   {:debug true
    :paused false
    :ball {:skin :blue
-          :position {:x 80 :y 80 :dx 30 :dy 50}}
+          :position {:x 80 :y 80 :dx -30 :dy 20}}
    :paddle {:skin :blue
             :speed 200
             :size-type :medium}
@@ -110,7 +110,7 @@
 
     x))
 
-(fn update [dt set-mode]
+(fn update-paddle [dt]
   (let [{: paddle : quads} state
         {: speed : position} paddle
         {: width} (paddle-dimensions {:paddle paddle :quads quads})
@@ -123,6 +123,23 @@
                   ;; Make sure the paddle stays in the window at all time
                   (lume.clamp 0 (- config.VIRTUAL_WIDTH width)))]
     (set state.paddle.position.x new-x)))
+
+(fn update-ball [dt]
+  (let [{: ball : quads} state
+        {: position} ball
+        {: width} (ball-dimensions {:ball ball :quads quads})
+        {: x : y : dx : dy} position
+        ;; TODO: handle collisions and walls
+        new-dx dx
+        new-dy dy
+        new-x (+ x (* dx dt))
+        new-y (+ y (* dy dt))
+        new-position {:x new-x :y new-y :dx new-dx :dy new-dy}]
+    (set state.ball.position new-position)))
+
+(fn update [dt]
+  (update-ball dt)
+  (update-paddle dt))
 
 (comment
   ;; For flushing REPL

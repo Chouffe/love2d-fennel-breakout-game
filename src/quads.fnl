@@ -57,7 +57,6 @@
    :arrows (arrows (. images :arrows))})
 
 (comment
-
   (let [assets (require :src.assets) 
         loaded-assets (assets.load-assets)
         loaded-quads (load-quads (. loaded-assets :images))]
