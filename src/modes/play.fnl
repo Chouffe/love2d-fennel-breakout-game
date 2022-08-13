@@ -107,6 +107,8 @@
       (table.insert collisions {:collision-type :ball-wall-right :data data}))
     (when (<= ball.position.y 0)
       (table.insert collisions {:collision-type :ball-wall-top :data data}))
+    (when (>= ball.position.y config.VIRTUAL_HEIGHT)
+      (table.insert collisions {:collision-type :ball-wall-bottom :data data}))
     ;; Ball collision with paddle
     (when (hitbox.collides 
             {:x paddle.position.x 
@@ -122,7 +124,7 @@
 
 (fn handle-collision [{: collision-type : data}]
   (let [wall-margin 1
-        paddle-margin 1]
+        paddle-ball-margin 1]
     (if
       ;; Paddle
       (= :paddle-wall-left collision-type)
@@ -136,7 +138,7 @@
       ;; Ball
       (= :ball-paddle collision-type)
       {:ball {:position {:x data.ball.position.x 
-                         :y (- config.VIRTUAL_HEIGHT data.paddle-dim.height data.ball-dim.height paddle-margin)
+                         :y (- config.VIRTUAL_HEIGHT data.paddle-dim.height data.ball-dim.height paddle-ball-margin)
                          :dx data.ball.position.dx 
                          :dy (- 0 data.ball.position.dy)}}}
 
@@ -156,7 +158,10 @@
       {:ball {:position {:x wall-margin
                          :y data.ball.position.y
                          :dx (- 0 data.ball.position.dx) 
-                         :dy data.ball.position.dy}}})))
+                         :dy data.ball.position.dy}}}
+
+      (= :ball-wall-bottom collision-type) 
+      {:ball-lost true})))
 
 (fn update-ball [{: dt : collisions : data-resolved-collisions : resolved-collisions}]
   (let [{: ball : paddle} state
@@ -167,14 +172,22 @@
         new-position {:x new-x :y new-y :dx dx :dy dy}]
     (set state.ball.position new-position)))
 
+(fn is-game-done [{: resolved-collisions}]
+  (?. resolved-collisions :ball-lost))
+
 (fn update [dt]
   (let [{: ball : paddle : quads} state
         collisions (detect-collisions {:ball ball :paddle paddle :quads quads})
         resolved-collisions (-> collisions
                                 (lume.map handle-collision)
-                                (lume.reduce lume.merge {}))]
-    (update-ball {: dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
-    (update-paddle {: dt :resolved-collisions (?. resolved-collisions :paddle)})))
+                                (lume.reduce lume.merge {}))
+        game-over (is-game-done {: resolved-collisions})]
+    (if (is-game-done {: resolved-collisions})
+      ;; TODO: activate new mode here
+      (print "Game game over!")
+      (do
+       (update-ball {: dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
+       (update-paddle {: dt :resolved-collisions (?. resolved-collisions :paddle)})))))
 
 (comment
   ;; For flushing REPL
