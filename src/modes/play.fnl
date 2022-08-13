@@ -12,7 +12,7 @@
   {:debug true
    :paused false
    :ball {:skin :blue
-          :position {:x 80 :y 80 :dx 200 :dy -100}}
+          :position {:x 80 :y 80 :dx -200 :dy -100}}
    :paddle {:skin :blue
             :speed 200
             :size-type :medium}
@@ -153,11 +153,29 @@
   (let [wall-margin 1
         paddle-margin 1]
     (if
+      (= :paddle collision-type)
+      {:ball {:position {:x data.ball.position.x 
+                         :y (- config.VIRTUAL_HEIGHT data.paddle-dim.height data.ball-dim.height paddle-margin)
+                         :dx data.ball.position.dx 
+                         :dy (- 0 data.ball.position.dy)}}}
+
       (= :wall-top collision-type) 
       {:ball {:position {:x data.ball.position.x 
                          :y wall-margin 
                          :dx data.ball.position.dx 
-                         :dy (- 0 data.ball.position.dy)}}})))
+                         :dy (- 0 data.ball.position.dy)}}}
+
+      (= :wall-right collision-type) 
+      {:ball {:position {:x (- config.VIRTUAL_WIDTH data.ball-dim.width wall-margin)
+                         :y data.ball.position.y
+                         :dx (- 0 data.ball.position.dx) 
+                         :dy data.ball.position.dy}}}
+
+      (= :wall-left collision-type) 
+      {:ball {:position {:x wall-margin
+                         :y data.ball.position.y
+                         :dx (- 0 data.ball.position.dx) 
+                         :dy data.ball.position.dy}}})))
 
 (comment
   (lume.first []))
@@ -166,10 +184,8 @@
   (let [{: ball : paddle} state
         {: position} ball
         {: x : y : dx : dy} (if data-resolved-collisions data-resolved-collisions.ball.position position)
-        ; {: x : y : dx : dy} position
         new-x (+ x (* dx dt)) 
         new-y (+ y (* dy dt)) 
-        ;; TODO: Collision detection with wall
         new-position {:x new-x :y new-y :dx dx :dy dy}]
     (set state.ball.position new-position)))
 
@@ -211,10 +227,29 @@
     (set state.ball.position new-position)))
 
 
+; (let [collisions [{:ball {:position {:dx 200 :dy -100 :x 1 :y 39.9089118}}}
+;                   {:paddle {:position {:dx 0 :dy 0 :x 1 :y 2}}}]
+;       collisions []]
+;   (-> collisions
+;       (lume.reduce lume.merge {})))
+
+; (comment
+;   (. _G :dd)
+;   (or nil "hello"))
+
 (fn update [dt]
   (let [{: ball : paddle : quads} state
         collisions (detect-collisions {:ball ball :paddle paddle :quads quads})
         data-resolved-collisions (lume.first (lume.map collisions handle-collision))]
+        ; data-resolved-collisions (or (-> collisions
+        ;                                 (lume.map handle-collision)
+        ;                                 lume.first)
+        ;                              {})]
+    ; (global dd data-resolved-collisions)
+        ; data-resolved-collisions (-> collisions
+        ;                              (lume.map handle-collision)
+        ;                              (lume.reduce lume.merge {}))]
+    (global dd data-resolved-collisions)
     (when (> (length collisions) 0)
       (print ">>> collisions: " (fennel.view collisions))
       (print ">>> data-resolved-collisions " (fennel.view data-resolved-collisions)))
