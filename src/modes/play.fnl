@@ -180,10 +180,11 @@
 (comment
   (lume.first []))
 
-(fn update-ball [{: dt : collisions : data-resolved-collisions}]
+(fn update-ball [{: dt : collisions : data-resolved-collisions : resolved-collisions}]
   (let [{: ball : paddle} state
         {: position} ball
-        {: x : y : dx : dy} (if data-resolved-collisions data-resolved-collisions.ball.position position)
+        ; {: x : y : dx : dy} (if data-resolved-collisions data-resolved-collisions.ball.position position)
+        {: x : y : dx : dy} (if resolved-collisions resolved-collisions.position position)
         new-x (+ x (* dx dt)) 
         new-y (+ y (* dy dt)) 
         new-position {:x new-x :y new-y :dx dx :dy dy}]
@@ -237,10 +238,18 @@
 ;   (. _G :dd)
 ;   (or nil "hello"))
 
+; (comment 
+;   (?. {:a :b} :a)
+;   (?. {:a :b} :b)
+;   (?. nil :b)
+;   (?. nil :a))
+
 (fn update [dt]
   (let [{: ball : paddle : quads} state
         collisions (detect-collisions {:ball ball :paddle paddle :quads quads})
-        data-resolved-collisions (lume.first (lume.map collisions handle-collision))]
+        data-resolved-collisions (-> collisions
+                                     (lume.map handle-collision)
+                                     (lume.reduce lume.merge {}))]
         ; data-resolved-collisions (or (-> collisions
         ;                                 (lume.map handle-collision)
         ;                                 lume.first)
@@ -249,12 +258,13 @@
         ; data-resolved-collisions (-> collisions
         ;                              (lume.map handle-collision)
         ;                              (lume.reduce lume.merge {}))]
-    (global dd data-resolved-collisions)
+    ; (global dd data-resolved-collisions)
     (when (> (length collisions) 0)
       (print ">>> collisions: " (fennel.view collisions))
-      (print ">>> data-resolved-collisions " (fennel.view data-resolved-collisions)))
-    (update-ball {: dt : collisions : data-resolved-collisions})
-    (update-paddle {: dt})))
+      ; (print ">>> data-resolved-collisions " (fennel.view data-resolved-collisions))
+      (print ">>> ball: " (fennel.view (?. data-resolved-collisions :ball))))
+    (update-ball {: dt : collisions :resolved-collisions (?. data-resolved-collisions :ball)})
+    (update-paddle {: dt :resolved-collisions (?. data-resolved-collisions :paddle)})))
 
 (comment
   ;; For flushing REPL
