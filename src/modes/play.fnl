@@ -134,6 +134,7 @@
         {: x : y : dx : dy} position
         pad-dim (paddle-dimensions {:paddle paddle :quads quads})
         wall-margin 1
+        paddle-margin 1
         new-x (+ x (* dx dt)) 
         new-y (+ y (* dy dt)) 
         ;; Collision detection with wall
@@ -149,9 +150,18 @@
                               {:x state.paddle.position.x :y state.paddle.position.y :width pad-dim.width :height pad-dim.height}
                               {:x x :y y :width width :height height})
         ;; TODO: handle collision with paddle here
-        new-dy (if (<= new-y wall-margin) (- 0 dy) dy)
+        new-dy (if 
+                 (<= new-y wall-margin) 
+                 (- 0 dy) 
+
+                 is-paddle-collision 
+                 (- 0 dy)
+
+                 dy)
         clamped-new-x (lume.clamp new-x wall-margin (- config.VIRTUAL_WIDTH width))
-        clamped-new-y (lume.clamp new-y wall-margin (+ config.VIRTUAL_HEIGHT height wall-margin))
+        clamped-new-y (lume.clamp new-y wall-margin (if is-paddle-collision 
+                                                      (- config.VIRTUAL_HEIGHT height pad-dim.height paddle-margin) 
+                                                      (+ config.VIRTUAL_HEIGHT height wall-margin)))
         new-position {:x clamped-new-x :y clamped-new-y :dx new-dx :dy new-dy}]
     ;; FOR debugging
     (if is-paddle-collision
