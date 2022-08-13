@@ -111,7 +111,7 @@
 
     x))
 
-(fn update-paddle [dt]
+(fn update-paddle [{: dt}]
   (let [{: paddle : quads} state
         {: speed : position} paddle
         {: width} (paddle-dimensions {:paddle paddle :quads quads})
@@ -127,7 +127,7 @@
 
 (+ 1 2)
 
-(fn update-ball [dt]
+(fn update-ball [{: dt : collisions}]
   (let [{: ball : quads : paddle} state
         {: position} ball
         {: width : height} (ball-dimensions {:ball ball :quads quads})
@@ -149,7 +149,6 @@
         is-paddle-collision (hitbox.collides 
                               {:x state.paddle.position.x :y state.paddle.position.y :width pad-dim.width :height pad-dim.height}
                               {:x x :y y :width width :height height})
-        ;; TODO: handle collision with paddle here
         new-dy (if 
                  (<= new-y wall-margin) 
                  (- 0 dy) 
@@ -163,14 +162,30 @@
                                                       (- config.VIRTUAL_HEIGHT height pad-dim.height paddle-margin) 
                                                       (+ config.VIRTUAL_HEIGHT height wall-margin)))
         new-position {:x clamped-new-x :y clamped-new-y :dx new-dx :dy new-dy}]
-    ;; FOR debugging
-    (if is-paddle-collision
-      (print ">>> collision"))
     (set state.ball.position new-position)))
 
+(fn detect-collisions [{: ball : paddle : quads}]
+  (let [paddle-dim (paddle-dimensions {:paddle paddle :quads quads})
+        ball-dim (ball-dimensions {:ball ball :quads quads})]
+    (if (hitbox.collides 
+          {:x paddle.position.x 
+           :y paddle.position.y 
+           :width paddle-dim.width 
+           :height paddle-dim.height}
+          {:x ball.position.x 
+           :y ball.position.y 
+           :width ball-dim.width 
+           :height ball-dim.height})
+      [{:type :paddle :data {:ball ball :paddle paddle :quads quads}}]
+      [])))
+
 (fn update [dt]
-  (update-ball dt)
-  (update-paddle dt))
+  (let [{: ball : paddle : quads} state
+        collisions (detect-collisions {:ball ball :paddle paddle :quads quads})]
+    (when (> (length collisions) 0)
+      (print ">>> collisions"))
+    (update-ball {: dt : collisions})
+    (update-paddle {: dt})))
 
 (comment
   ;; For flushing REPL
