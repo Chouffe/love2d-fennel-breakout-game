@@ -125,9 +125,55 @@
                   (lume.clamp 0 (- config.VIRTUAL_WIDTH width)))]
     (set state.paddle.position.x new-x)))
 
-(+ 1 2)
+(fn detect-collisions [{: ball : paddle : quads}]
+  (let [paddle-dim (paddle-dimensions {:paddle paddle :quads quads})
+        ball-dim (ball-dimensions {:ball ball :quads quads})
+        data {:paddle-dim paddle-dim :ball-dim ball-dim :ball ball :paddle paddle :quads quads}
+        collisions []]
+    ;; TODO: should we also handle the collision with the paddle and walls?
+    (when (<= ball.position.x 0)
+      (table.insert collisions {:collision-type :wall-left :data data}))
+    (when (>= ball.position.x (- config.VIRTUAL_WIDTH ball-dim.width))
+      (table.insert collisions {:collision-type :wall-right :data data}))
+    (when (<= ball.position.y 0)
+      (table.insert collisions {:collision-type :wall-top :data data}))
+    (when (hitbox.collides 
+            {:x paddle.position.x 
+             :y paddle.position.y 
+             :width paddle-dim.width 
+             :height paddle-dim.height}
+            {:x ball.position.x 
+             :y ball.position.y 
+             :width ball-dim.width 
+             :height ball-dim.height})
+      (table.insert collisions {:collision-type :paddle :data data}))
+    collisions))
 
-(fn update-ball [{: dt : collisions}]
+(fn handle-collision [{: collision-type : data}]
+  (let [wall-margin 1
+        paddle-margin 1]
+    (if
+      (= :wall-top collision-type) 
+      {:ball {:position {:x data.ball.position.x 
+                         :y wall-margin 
+                         :dx data.ball.position.dx 
+                         :dy (- 0 data.ball.position.dy)}}})))
+
+(comment
+  (lume.first []))
+
+(fn update-ball [{: dt : collisions : data-resolved-collisions}]
+  (let [{: ball : paddle} state
+        {: position} ball
+        {: x : y : dx : dy} (if data-resolved-collisions data-resolved-collisions.ball.position position)
+        ; {: x : y : dx : dy} position
+        new-x (+ x (* dx dt)) 
+        new-y (+ y (* dy dt)) 
+        ;; TODO: Collision detection with wall
+        new-position {:x new-x :y new-y :dx dx :dy dy}]
+    (set state.ball.position new-position)))
+
+(fn update-ball-2 [{: dt : collisions}]
   (let [{: ball : quads : paddle} state
         {: position} ball
         {: width : height} (ball-dimensions {:ball ball :quads quads})
@@ -164,27 +210,15 @@
         new-position {:x clamped-new-x :y clamped-new-y :dx new-dx :dy new-dy}]
     (set state.ball.position new-position)))
 
-(fn detect-collisions [{: ball : paddle : quads}]
-  (let [paddle-dim (paddle-dimensions {:paddle paddle :quads quads})
-        ball-dim (ball-dimensions {:ball ball :quads quads})]
-    (if (hitbox.collides 
-          {:x paddle.position.x 
-           :y paddle.position.y 
-           :width paddle-dim.width 
-           :height paddle-dim.height}
-          {:x ball.position.x 
-           :y ball.position.y 
-           :width ball-dim.width 
-           :height ball-dim.height})
-      [{:type :paddle :data {:ball ball :paddle paddle :quads quads}}]
-      [])))
 
 (fn update [dt]
   (let [{: ball : paddle : quads} state
-        collisions (detect-collisions {:ball ball :paddle paddle :quads quads})]
+        collisions (detect-collisions {:ball ball :paddle paddle :quads quads})
+        data-resolved-collisions (lume.first (lume.map collisions handle-collision))]
     (when (> (length collisions) 0)
-      (print ">>> collisions"))
-    (update-ball {: dt : collisions})
+      (print ">>> collisions: " (fennel.view collisions))
+      (print ">>> data-resolved-collisions " (fennel.view data-resolved-collisions)))
+    (update-ball {: dt : collisions : data-resolved-collisions})
     (update-paddle {: dt})))
 
 (comment
