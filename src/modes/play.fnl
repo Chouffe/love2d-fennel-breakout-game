@@ -8,6 +8,7 @@
 (local paddle-color-order 
   [:blue :green :red :purple])
 
+;; TODO: change to var when done developping
 (global state 
   {:debug true
    :paused false
@@ -18,26 +19,6 @@
             :size-type :medium}
    :quads {}
    :assets {}})
-
-(global sp state)
-
-(comment
-  _G
-  (. _G :sp)
-
-  ;; Moving the paddle
-  (let [paddle (. _G.sp :paddle)
-        new-position {:x (+ paddle.position.x 100)
-                      :y paddle.position.y}]
-    (set _G.sp.paddle.position new-position))
-
-  (let [atlas (. _G.sp.assets.images :main)]
-    (quads.paddles atlas)
-    (: atlas :getWidth)
-    (: atlas :getHeight))
-  ;; Change debug rendering
-  (set sp.debug false)
-  (set sp.debug true))
 
 (fn draw-background-image [images]
   (let [background-image (. images :background)
@@ -51,9 +32,6 @@
       ;; Scale factors on X and Y axis so that it fits the whole screen
       (/ config.VIRTUAL_WIDTH (- width 1)) 
       (/ config.VIRTUAL_HEIGHT (- height 1)))))
-
-(comment
-  (+ 1 2))
 
 ;; TODO: move this to the paddle namespace
 (fn paddle-dimensions [{: paddle : quads}]
@@ -111,32 +89,34 @@
 
     x))
 
-(fn update-paddle [{: dt}]
+(fn update-paddle [{: dt : resolved-collisions}]
   (let [{: paddle : quads} state
         {: speed : position} paddle
-        {: width} (paddle-dimensions {:paddle paddle :quads quads})
-        {: x} position
+        {: x} (if resolved-collisions resolved-collisions.position position)
         key (if 
               (love.keyboard.isDown :left) :left
               (love.keyboard.isDown :right) :right
-              nil)
-        new-x (-> (handle-keyboard {:speed speed :x x :dt dt :key key})
-                  ;; Make sure the paddle stays in the window at all time
-                  (lume.clamp 0 (- config.VIRTUAL_WIDTH width)))]
-    (set state.paddle.position.x new-x)))
+              nil)]
+    (set state.paddle.position.x (handle-keyboard {:speed speed :x x :dt dt :key key}))))
 
 (fn detect-collisions [{: ball : paddle : quads}]
   (let [paddle-dim (paddle-dimensions {:paddle paddle :quads quads})
         ball-dim (ball-dimensions {:ball ball :quads quads})
         data {:paddle-dim paddle-dim :ball-dim ball-dim :ball ball :paddle paddle :quads quads}
         collisions []]
-    ;; TODO: should we also handle the collision with the paddle and walls?
+    ;; Paddle collision with walls
+    (when (<= paddle.position.x 0)
+      (table.insert collisions {:collision-type :paddle-wall-left :data data}))
+    (when (>= paddle.position.x (- config.VIRTUAL_WIDTH paddle-dim.width))
+      (table.insert collisions {:collision-type :paddle-wall-right :data data}))
+    ;; Ball collision with walls
     (when (<= ball.position.x 0)
-      (table.insert collisions {:collision-type :wall-left :data data}))
+      (table.insert collisions {:collision-type :ball-wall-left :data data}))
     (when (>= ball.position.x (- config.VIRTUAL_WIDTH ball-dim.width))
-      (table.insert collisions {:collision-type :wall-right :data data}))
+      (table.insert collisions {:collision-type :ball-wall-right :data data}))
     (when (<= ball.position.y 0)
-      (table.insert collisions {:collision-type :wall-top :data data}))
+      (table.insert collisions {:collision-type :ball-wall-top :data data}))
+    ;; Ball collision with paddle
     (when (hitbox.collides 
             {:x paddle.position.x 
              :y paddle.position.y 
@@ -146,125 +126,64 @@
              :y ball.position.y 
              :width ball-dim.width 
              :height ball-dim.height})
-      (table.insert collisions {:collision-type :paddle :data data}))
+      (table.insert collisions {:collision-type :ball-paddle :data data}))
     collisions))
 
 (fn handle-collision [{: collision-type : data}]
   (let [wall-margin 1
         paddle-margin 1]
     (if
-      (= :paddle collision-type)
+      ;; Paddle
+      (= :paddle-wall-left collision-type)
+      {:paddle {:position {:x 0
+                           :y data.paddle.position.y}}}
+
+      (= :paddle-wall-right collision-type)
+      {:paddle {:position {:x (- config.VIRTUAL_WIDTH data.paddle-dim.width)
+                           :y data.paddle.position.y}}}
+
+      ;; Ball
+      (= :ball-paddle collision-type)
       {:ball {:position {:x data.ball.position.x 
                          :y (- config.VIRTUAL_HEIGHT data.paddle-dim.height data.ball-dim.height paddle-margin)
                          :dx data.ball.position.dx 
                          :dy (- 0 data.ball.position.dy)}}}
 
-      (= :wall-top collision-type) 
+      (= :ball-wall-top collision-type) 
       {:ball {:position {:x data.ball.position.x 
                          :y wall-margin 
                          :dx data.ball.position.dx 
                          :dy (- 0 data.ball.position.dy)}}}
 
-      (= :wall-right collision-type) 
+      (= :ball-wall-right collision-type) 
       {:ball {:position {:x (- config.VIRTUAL_WIDTH data.ball-dim.width wall-margin)
                          :y data.ball.position.y
                          :dx (- 0 data.ball.position.dx) 
                          :dy data.ball.position.dy}}}
 
-      (= :wall-left collision-type) 
+      (= :ball-wall-left collision-type) 
       {:ball {:position {:x wall-margin
                          :y data.ball.position.y
                          :dx (- 0 data.ball.position.dx) 
                          :dy data.ball.position.dy}}})))
 
-(comment
-  (lume.first []))
-
 (fn update-ball [{: dt : collisions : data-resolved-collisions : resolved-collisions}]
   (let [{: ball : paddle} state
         {: position} ball
-        ; {: x : y : dx : dy} (if data-resolved-collisions data-resolved-collisions.ball.position position)
         {: x : y : dx : dy} (if resolved-collisions resolved-collisions.position position)
         new-x (+ x (* dx dt)) 
         new-y (+ y (* dy dt)) 
         new-position {:x new-x :y new-y :dx dx :dy dy}]
     (set state.ball.position new-position)))
 
-(fn update-ball-2 [{: dt : collisions}]
-  (let [{: ball : quads : paddle} state
-        {: position} ball
-        {: width : height} (ball-dimensions {:ball ball :quads quads})
-        {: x : y : dx : dy} position
-        pad-dim (paddle-dimensions {:paddle paddle :quads quads})
-        wall-margin 1
-        paddle-margin 1
-        new-x (+ x (* dx dt)) 
-        new-y (+ y (* dy dt)) 
-        ;; Collision detection with wall
-        new-dx (if 
-                 (<= new-x wall-margin) 
-                 (- 0 dx) 
-
-                 (>= new-x (- config.VIRTUAL_WIDTH width wall-margin))
-                 (- 0 dx)
-
-                 dx) 
-        is-paddle-collision (hitbox.collides 
-                              {:x state.paddle.position.x :y state.paddle.position.y :width pad-dim.width :height pad-dim.height}
-                              {:x x :y y :width width :height height})
-        new-dy (if 
-                 (<= new-y wall-margin) 
-                 (- 0 dy) 
-
-                 is-paddle-collision 
-                 (- 0 dy)
-
-                 dy)
-        clamped-new-x (lume.clamp new-x wall-margin (- config.VIRTUAL_WIDTH width))
-        clamped-new-y (lume.clamp new-y wall-margin (if is-paddle-collision 
-                                                      (- config.VIRTUAL_HEIGHT height pad-dim.height paddle-margin) 
-                                                      (+ config.VIRTUAL_HEIGHT height wall-margin)))
-        new-position {:x clamped-new-x :y clamped-new-y :dx new-dx :dy new-dy}]
-    (set state.ball.position new-position)))
-
-
-; (let [collisions [{:ball {:position {:dx 200 :dy -100 :x 1 :y 39.9089118}}}
-;                   {:paddle {:position {:dx 0 :dy 0 :x 1 :y 2}}}]
-;       collisions []]
-;   (-> collisions
-;       (lume.reduce lume.merge {})))
-
-; (comment
-;   (. _G :dd)
-;   (or nil "hello"))
-
-; (comment 
-;   (?. {:a :b} :a)
-;   (?. {:a :b} :b)
-;   (?. nil :b)
-;   (?. nil :a))
-
 (fn update [dt]
   (let [{: ball : paddle : quads} state
         collisions (detect-collisions {:ball ball :paddle paddle :quads quads})
-        data-resolved-collisions (-> collisions
-                                     (lume.map handle-collision)
-                                     (lume.reduce lume.merge {}))]
-        ; data-resolved-collisions (or (-> collisions
-        ;                                 (lume.map handle-collision)
-        ;                                 lume.first)
-        ;                              {})]
-    ; (global dd data-resolved-collisions)
-        ; data-resolved-collisions (-> collisions
-        ;                              (lume.map handle-collision)
-        ;                              (lume.reduce lume.merge {}))]
-    ; (global dd data-resolved-collisions)
-    (when (> (length collisions) 0)
-      (print ">>> collisions: " (fennel.view collisions))
-      ; (print ">>> data-resolved-collisions " (fennel.view data-resolved-collisions))
-      (print ">>> ball: " (fennel.view (?. data-resolved-collisions :ball))))
-    (update-ball {: dt : collisions :resolved-collisions (?. data-resolved-collisions :ball)})
-    (update-paddle {: dt :resolved-collisions (?. data-resolved-collisions :paddle)})))
+        resolved-collisions (-> collisions
+                                (lume.map handle-collision)
+                                (lume.reduce lume.merge {}))]
+    (update-ball {: dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
+    (update-paddle {: dt :resolved-collisions (?. resolved-collisions :paddle)})))
 
 (comment
   ;; For flushing REPL
@@ -281,9 +200,6 @@
     (set state.paddle paddle)
     (set state.paddle.position default-paddle-position)
     (set state.paddle.speed default-paddle-speed)))
-
-(comment
-  (+ 1 2))
 
 (fn keypressed [key set-mode]
   (if 
