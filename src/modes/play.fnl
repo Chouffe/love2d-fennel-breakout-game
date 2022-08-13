@@ -2,6 +2,7 @@
 
 (local config (require :src.config))
 (local debug (require :src.debug))
+(local entities (require :src.entities))
 (local quads (require :src.quads))
 (local hitbox (require :src.hitbox))
 
@@ -33,20 +34,10 @@
       (/ config.VIRTUAL_WIDTH (- width 1)) 
       (/ config.VIRTUAL_HEIGHT (- height 1)))))
 
-;; TODO: move this to the paddle namespace
-(fn paddle-dimensions [{: paddle : quads}]
-  (let [{: size-type : skin : position } paddle 
-        quad (. (. quads.paddles skin) size-type)
-        (_ _ width height) (: quad :getViewport)]
-    {:width width :height height}))
-
-(fn ball-dimensions [{: ball : quads}]
-  {:width 8 :height 8})
-
 (fn draw-paddle [{: paddle : images : quads}]
   (let [{: size-type : skin : position} paddle 
         {: x : y} position
-        {: width : height} (paddle-dimensions {:paddle paddle :quads quads})
+        {: width : height} (entities.paddle-dimensions {:paddle paddle :quads quads})
         atlas (. images :main)
         quad (. (. quads.paddles skin) size-type)]
     (love.graphics.draw atlas quad x y)))
@@ -54,7 +45,7 @@
 (fn draw-ball [{: ball : images : quads}]
   (let [{: skin : position} ball 
         {: x : y} position
-        {: width : height} (ball-dimensions {:ball ball :quads quads})
+        {: width : height} (entities.ball-dimensions {:ball ball :quads quads})
         atlas (. images :main)
         quad (. quads.balls skin)]
     (love.graphics.draw atlas quad x y)))
@@ -100,8 +91,8 @@
     (set state.paddle.position.x (handle-keyboard {:speed speed :x x :dt dt :key key}))))
 
 (fn detect-collisions [{: ball : paddle : quads}]
-  (let [paddle-dim (paddle-dimensions {:paddle paddle :quads quads})
-        ball-dim (ball-dimensions {:ball ball :quads quads})
+  (let [paddle-dim (entities.paddle-dimensions {:paddle paddle :quads quads})
+        ball-dim (entities.ball-dimensions {:ball ball :quads quads})
         data {:paddle-dim paddle-dim :ball-dim ball-dim :ball ball :paddle paddle :quads quads}
         collisions []]
     ;; Paddle collision with walls
@@ -193,7 +184,7 @@
   (set state.quads quads)
   (set state.assets assets)
   ;; Updating paddle entity
-  (let [{: width : height} (paddle-dimensions {:paddle paddle :quads quads})
+  (let [{: width : height} (entities.paddle-dimensions {:paddle paddle :quads quads})
         default-paddle-speed 200
         default-paddle-position {:x (/ (- config.VIRTUAL_WIDTH width) 2) 
                                  :y (- config.VIRTUAL_HEIGHT height)}]
