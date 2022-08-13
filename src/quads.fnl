@@ -51,12 +51,70 @@
   {:left (love.graphics.newQuad 0 0 24 24 (: atlas :getDimensions))
    :right (love.graphics.newQuad 24 0 24 24 (: atlas :getDimensions))})
 
+
+(fn range [start end step]
+  (let [result []]
+    (for [i start end step]
+      (table.insert result i))
+    result))
+
+(comment
+  (range 0 10 2)
+  (range 0 192 32)
+  (range 0 256 16)
+
+  (-> (range 0 256 16)
+      (lume.map (fn [y]
+                  (-> (range 0 192 32)
+                      (lume.map (fn [x] {:x x :y y})))))
+      (lume.reduce lume.concat []))
+
+  (lume.map))
+
+(->> (lume.map [0 32 64]))
+(for [i 1 10 2]
+  (print i))
+
+;; WIP
+(fn bricks [atlas]
+  (let [brick-width 32
+        brick-height 16
+        (atlas-width atlas-height) (: atlas :getDimensions)
+        all-quads (-> (range 0 atlas-height brick-height)
+                      (lume.map (fn [y]
+                                  (-> (range 0 atlas-width brick-width)
+                                      (lume.map (fn [x] {:x x :y y})))))
+                      (lume.reduce lume.concat [])
+                      (lume.map (fn [{: x : y}]
+                                  (love.graphics.newQuad x y brick-width brick-height atlas-width atlas-height))))]
+    {:blue (lume.map (range 1 4 1) (fn [idx] ( . all-quads idx))) 
+     :green (lume.map (range 5 8 1) (fn [idx] ( . all-quads idx)))
+     :red (lume.map (range 9 12 1) (fn [idx] ( . all-quads idx)))
+     :purple (lume.map (range 13 17 1) (fn [idx] ( . all-quads idx)))
+     :yellow (lume.map (range 17 21 1) (fn [idx] ( . all-quads idx)))}))
+
+(comment
+  (let [assets (require :src.assets) 
+        loaded-assets (assets.load-assets)
+        atlas (. loaded-assets.images :main)]
+    (bricks atlas)))
+        ;; Returns multiple values
+
+
 (fn load-quads [images]
   {:balls (balls (. images :main))
    :paddles (paddles (. images :main))
    :arrows (arrows (. images :arrows))})
 
 (comment
+
+  (let [assets (require :src.assets) 
+        loaded-assets (assets.load-assets)
+        atlas (. loaded-assets.images :main)
+        ;; Returns multiple values
+        (w h) (: atlas :getDimensions)]
+    [w h])
+
   (let [assets (require :src.assets) 
         loaded-assets (assets.load-assets)
         loaded-quads (load-quads (. loaded-assets :images))]
