@@ -34,6 +34,30 @@
     {:cell-type :brick :color :purple :tier 3} 
     {:cell-type :brick :color :purple :tier 4}]])
 
+(fn cell->entity 
+  [cell {: x0  : y0 : x-index : y-index}]
+  (let [{: cell-type} cell
+        [cell-width cell-height] [32 16]
+        [cell-spacing-x cell-spacing-y] [5 10]
+        x (+ x0 
+             (* cell-width (- x-index 1)) 
+             (* cell-spacing-x (- x-index 1)))
+        y (+ y0 
+             (* cell-height (- y-index 1))
+             (* cell-spacing-y (- y-index 1)))]
+    (if (= cell-type :brick)
+      (let [{: color : tier} cell]
+        {:entity-type :brick : x : y : color : tier :width cell-width :height cell-height}))))
+
+(fn draw-cell-entity
+  [entity {: images : quads}]
+  (let [{: entity-type : x : y : width : height} entity]
+    (if (= entity-type :brick)
+      (let [{: color : tier} entity
+            quad (. (. quads.bricks color) tier)
+            atlas (. images :main)]
+        (love.graphics.draw atlas quad x y)))))
+
 (fn draw-cell 
   [cell {: x0  : y0 : x-index : y-index : images : quads}]
   (let [{: cell-type} cell
@@ -50,9 +74,6 @@
             quad (. (. quads.bricks color) tier)
             atlas (. images :main)]
         (love.graphics.draw atlas quad x y)))))
-
-(comment 
-  (. [1 2 3] 1))
 
 (fn draw-level []
   (let [loaded-assets (assets.load-assets)
