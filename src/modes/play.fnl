@@ -58,18 +58,21 @@
   (love.graphics.printf "Press p to resume" 0 (+ (/ config.VIRTUAL_HEIGHT 3) 35) config.VIRTUAL_WIDTH :center))
 
 (fn draw []
-  (draw-background-image (. state.assets :images))
-  (when state.paused
-    (draw-pause (. state.assets :fonts)))
-  (level.draw-level)
-  (draw-paddle {:images (. state.assets :images)
-                :paddle (. state :paddle)
+  (let [images (. state.assets :images)
+        fonts (. state.assets :fonts)
+        qds (. state :quads)]
+    (draw-background-image images)
+    (when state.paused
+      (draw-pause fonts))
+    (level.draw-level {:level 1 : images :quads qds})
+    (draw-paddle {:images images
+                  :paddle (. state :paddle)
+                  :quads (. state :quads)})
+    (draw-ball {:images images
+                :ball (. state :ball)
                 :quads (. state :quads)})
-  (draw-ball {:images (. state.assets :images)
-              :ball (. state :ball)
-              :quads (. state :quads)})
-  (when (. state :debug)
-    (debug.display-fps state.assets.fonts.small)))
+    (when (. state :debug)
+      (debug.display-fps (. fonts :small)))))
 
 ;; TODO: move to a paddle namespace?
 (fn handle-keyboard [{: x : speed : dt : key}]
