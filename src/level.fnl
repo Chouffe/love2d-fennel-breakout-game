@@ -17,7 +17,22 @@
     {:cell-type :brick :color :green :tier 2} 
     {:cell-type :brick :color :green :tier 3} 
     {:cell-type :void}
-    {:cell-type :brick :color :green :tier 4}]])
+    {:cell-type :brick :color :green :tier 4}]
+   [{:cell-type :brick :color :red :tier 1} 
+    {:cell-type :void}
+    {:cell-type :brick :color :red :tier 2} 
+    {:cell-type :brick :color :red :tier 3} 
+    {:cell-type :brick :color :red :tier 4}]
+   [{:cell-type :brick :color :yellow :tier 1} 
+    {:cell-type :void}
+    {:cell-type :brick :color :yellow :tier 2} 
+    {:cell-type :brick :color :yellow :tier 3} 
+    {:cell-type :brick :color :yellow :tier 4}]
+   [{:cell-type :brick :color :purple :tier 1} 
+    {:cell-type :void}
+    {:cell-type :brick :color :purple :tier 2} 
+    {:cell-type :brick :color :purple :tier 3} 
+    {:cell-type :brick :color :purple :tier 4}]])
 
 (fn draw-cell 
   [cell {: x0  : y0 : x-index : y-index : images : quads}]
