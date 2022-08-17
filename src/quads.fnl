@@ -38,13 +38,30 @@
   {:left (love.graphics.newQuad 0 0 24 24 (: atlas :getDimensions))
    :right (love.graphics.newQuad 24 0 24 24 (: atlas :getDimensions))})
 
+(comment
+
+  (let [assets (require :src.assets) 
+        loaded-assets (assets.load-assets)
+        loaded-quads (load-quads (. loaded-assets :images))
+        atlas (. loaded-assets.images :main)
+        (atlas-width atlas-height) (: atlas :getDimensions)]
+    loaded-assets
+    loaded-quads
+    [atlas-width atlas-height]
+    (util.range 0 atlas-height 16)
+    (util.range 0 atlas-width 32)
+    (lume.slice (util.range 0 atlas-width 32) 1 6)))
+
+(comment
+  (lume.slice [1 2 3 4 5] 1 3))
+
 (fn bricks [atlas]
   (let [brick-width 32
         brick-height 16
         (atlas-width atlas-height) (: atlas :getDimensions)
-        all-quads (-> (util.range 0 atlas-height brick-height)
+        all-quads (-> (util.range 0 (- atlas-height brick-height) brick-height)
                       (lume.map (fn [y]
-                                  (-> (util.range 0 atlas-width brick-width)
+                                  (-> (util.range 0 (- atlas-width brick-width) brick-width)
                                       (lume.map (fn [x] {:x x :y y})))))
                       (lume.reduce lume.concat [])
                       (lume.map (fn [{: x : y}]
@@ -78,7 +95,8 @@
         (w h) (: atlas :getDimensions)]
     [w h])
 
-  (let [assets (require :src.assets) 
+  (let [
+        assets (require :src.assets) 
         loaded-assets (assets.load-assets)
         loaded-quads (load-quads (. loaded-assets :images))]
     loaded-quads)

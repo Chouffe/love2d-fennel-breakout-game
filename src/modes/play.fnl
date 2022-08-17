@@ -61,6 +61,7 @@
   (draw-background-image (. state.assets :images))
   (when state.paused
     (draw-pause (. state.assets :fonts)))
+  (level.draw-level)
   (draw-paddle {:images (. state.assets :images)
                 :paddle (. state :paddle)
                 :quads (. state :quads)})
