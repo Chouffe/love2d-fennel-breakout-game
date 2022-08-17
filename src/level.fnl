@@ -49,14 +49,34 @@
       (let [{: color : tier} cell]
         {:entity-type :brick : x : y : color : tier :width cell-width :height cell-height}))))
 
+(comment
+  (let [x-index 3
+        y-index 2
+        cell (. level-matrix-data y-index x-index)
+        entity (cell->entity cell {:x0 0 :y0 0 : x-index : y-index})]
+    entity))
+
 (fn draw-cell-entity
   [entity {: images : quads}]
-  (let [{: entity-type : x : y : width : height} entity]
-    (if (= entity-type :brick)
-      (let [{: color : tier} entity
-            quad (. (. quads.bricks color) tier)
-            atlas (. images :main)]
-        (love.graphics.draw atlas quad x y)))))
+  (when (= :table (type entity))
+    (let [{: entity-type : x : y : width : height} entity]
+      (if (= entity-type :brick)
+        (let [{: color : tier} entity
+              quad (. (. quads.bricks color) tier)
+              atlas (. images :main)]
+          (love.graphics.draw atlas quad x y))))))
+
+(comment
+  (let [loaded-assets (assets.load-assets)
+        images (. loaded-assets :images)
+        loaded-quads (quads.load-quads images)
+        x-index 3
+        y-index 2
+        cell (. level-matrix-data y-index x-index)
+        entity (cell->entity cell {:x0 0 :y0 0 : x-index : y-index})]
+    entity
+    (draw-cell-entity nil { : images :quads loaded-quads})))
+    ; (draw-cell-entity entity { : images :quads loaded-quads})))
 
 (fn draw-cell 
   [cell {: x0  : y0 : x-index : y-index : images : quads}]
@@ -97,13 +117,10 @@
     (each [y-index v (pairs level-matrix-data)]
       (each [x-index cell (pairs v)]
         (let [x (+ x0 (* brick-width (- x-index 1)))
-              y (+ y0 (* brick-height (- y-index 1)))]
-          (draw-cell 
-            cell 
-            {: x0 : y0 : x-index : y-index : images  
-             :quads loaded-quads}))))))
-          ; (print (fennel.view [x-index y-index]))
-          ; (print (fennel.view [x y]))
-          ; (print (fennel.view cell)))))
+              y (+ y0 (* brick-height (- y-index 1)))
+              entity (cell->entity cell { : x0 : y0 : x-index : y-index})]
+          (draw-cell-entity 
+            entity 
+            { : images :quads loaded-quads}))))))
 
 {: draw-level}
