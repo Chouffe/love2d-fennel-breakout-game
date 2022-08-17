@@ -14,6 +14,7 @@
 (global state 
   {:debug true
    :paused false
+   :level 1
    :ball {:skin :blue
           :position {:x 80 :y 80 :dx -200 :dy -100}}
    :paddle {:skin :blue
@@ -198,7 +199,7 @@
   ;; For flushing REPL
   (+ 1 2))
 
-(fn activate [{: assets : quads : paddle}]
+(fn activate [{: level : assets : quads : paddle}]
   (set state.quads quads)
   (set state.assets assets)
   ;; Updating paddle entity

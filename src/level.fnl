@@ -65,11 +65,6 @@
             (table.insert entities entity))))) 
     {: matrix : entities : x0 : y0}))
 
-(comment
-  (let [t {:a 42}]
-    (set t.entity-id :hello)
-    t))
-
 (comment 
   (level->level-data 1))
 

@@ -31,7 +31,8 @@
     (if
       (= mode-name :play)
       (let [default-paddle {:skin :blue :size-type :medium}]
-        {:assets loaded-assets
+        {:level 1
+         :assets loaded-assets
          :quads loaded-quads
          :paddle default-paddle})
     

@@ -144,7 +144,8 @@
     (love.event.quit)
 
     (or (= key :enter) (= key :return))
-    (set-mode :play {:assets state.assets
+    (set-mode :play {:level 1
+                     :assets state.assets
                      :quads state.quads
                      :paddle state.paddle})
 
