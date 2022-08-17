@@ -7,4 +7,7 @@
 (fn ball-dimensions [{: ball : quads}]
   {:width 8 :height 8})
 
-{: paddle-dimensions : ball-dimensions}
+(fn brick-dimensions [{: brick : quads}]
+  {:width 32 :height 16})
+
+{: paddle-dimensions : ball-dimensions : brick-dimensions}

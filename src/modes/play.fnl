@@ -5,6 +5,7 @@
 (local entity (require :src.entity))
 (local quads (require :src.quads))
 (local hitbox (require :src.hitbox))
+(local level (require :src.level))
 
 (local paddle-color-order 
   [:blue :green :red :purple])
@@ -175,7 +176,7 @@
 (fn is-game-done [{: resolved-collisions}]
   (?. resolved-collisions :ball-lost))
 
-(fn update [dt]
+(fn update [dt set-mode]
   (let [{: ball : paddle : quads} state
         collisions (detect-collisions {:ball ball :paddle paddle :quads quads})
         resolved-collisions (-> collisions
@@ -183,8 +184,8 @@
                                 (lume.reduce lume.merge {}))
         game-over (is-game-done {: resolved-collisions})]
     (if (is-game-done {: resolved-collisions})
-      ;; TODO: activate new mode here
-      (print "Game game over!")
+      ;; TODO: Make a game over mode here
+      (set-mode :select-paddle {:assets (. state :assets)})
       (do
        (update-ball {: dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
        (update-paddle {: dt :resolved-collisions (?. resolved-collisions :paddle)})))))
