@@ -32,14 +32,6 @@
     {:cell-type :brick :color :purple :tier 4}]])
 
 ;; TODO: implement multiple levels here
-(fn level->level-data [level]
-  {:matrix level-matrix-1
-   :x0 30 
-   :y0 40})
-
-(comment 
-  (level->level-data 1))
-
 (fn cell->entity 
   [cell {: x0  : y0 : x-index : y-index}]
   (let [{: cell-type} cell
@@ -58,6 +50,29 @@
          :width cell-width 
          :height cell-height}))))
 
+;; TODO: find a way to do it functionally instead
+(fn level->level-data [level]
+  (let [matrix level-matrix-1
+        [x0 y0] [30 40]
+        entities []]
+    (each [y-index v (pairs matrix)]
+      (each [x-index cell (pairs v)]
+        ;; TODO: this should not be done here but in the load function in play
+        (let [entity-id (lume.uuid)
+              entity (cell->entity cell { : x0 : y0 : x-index : y-index})]
+          (when (= :table (type entity))
+            (set entity.id entity-id)
+            (table.insert entities entity))))) 
+    {: matrix : entities : x0 : y0}))
+
+(comment
+  (let [t {:a 42}]
+    (set t.entity-id :hello)
+    t))
+
+(comment 
+  (level->level-data 1))
+
 (fn draw-cell-entity
   [entity {: images : quads}]
   (when (= :table (type entity))
@@ -69,11 +84,11 @@
           (love.graphics.draw atlas quad x y))))))
 
 (fn draw-level [{: level : images : quads}]
-  (let [{: matrix : x0 : y0} (level->level-data level)]
-    (each [y-index v (pairs matrix)]
-      (each [x-index cell (pairs v)]
-        (draw-cell-entity 
-          (cell->entity cell { : x0 : y0 : x-index : y-index}) 
-          { : images : quads})))))
+  (let [{: entities} (level->level-data level)]
+    (each [_ entity (pairs entities)]
+      (draw-cell-entity entity { : images : quads}))))
 
-{: draw-level}
+;; TODO: remove the draw level from here
+{: draw-level 
+ : draw-cell-entity 
+ : level->level-data}
