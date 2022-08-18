@@ -46,7 +46,10 @@
     (if (= cell-type :brick)
       (let [{: color : tier} cell]
         {:entity-type :brick 
-         : x : y : color : tier 
+         ; : x : y
+         :position {: x : y}
+         : color 
+         : tier 
          :width cell-width 
          :height cell-height}))))
 

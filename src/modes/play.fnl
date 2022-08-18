@@ -62,7 +62,8 @@
   (love.graphics.printf "Press p to resume" 0 (+ (/ config.VIRTUAL_HEIGHT 3) 35) config.VIRTUAL_WIDTH :center))
 
 (fn draw-brick [{: images : quads : brick}]
-  (let [{: x : y : width : height : color : tier} brick
+  (let [{: position : width : height : color : tier} brick
+        {: x : y} position
         quad (. (. quads.bricks color) tier)
         atlas (. images :main)]
     (love.graphics.draw atlas quad x y)))
@@ -106,7 +107,7 @@
               nil)]
     (set state.paddle.position.x (handle-keyboard {:speed speed :x x :dt dt :key key}))))
 
-(fn detect-collisions [{: ball : paddle : quads}]
+(fn detect-collisions [{: bricks : ball : paddle : quads}]
   (let [paddle-dim (entity.paddle-dimensions {:paddle paddle :quads quads})
         ball-dim (entity.ball-dimensions {:ball ball :quads quads})
         data {:paddle-dim paddle-dim :ball-dim ball-dim :ball ball :paddle paddle :quads quads}
@@ -125,6 +126,8 @@
       (table.insert collisions {:collision-type :ball-wall-top :data data}))
     (when (>= ball.position.y config.VIRTUAL_HEIGHT)
       (table.insert collisions {:collision-type :ball-wall-bottom :data data}))
+    ;; Ball collision with entities
+    ;; TODO
     ;; Ball collision with paddle
     (when (hitbox.collides 
             {:x paddle.position.x 
@@ -192,8 +195,8 @@
   (?. resolved-collisions :ball-lost))
 
 (fn update [dt set-mode]
-  (let [{: ball : paddle : quads} state
-        collisions (detect-collisions {:ball ball :paddle paddle :quads quads})
+  (let [{: ball : paddle : quads : bricks} state
+        collisions (detect-collisions {: ball : paddle : quads : bricks})
         resolved-collisions (-> collisions
                                 (lume.map handle-collision)
                                 (lume.reduce lume.merge {}))
@@ -211,7 +214,7 @@
   ;; For flushing REPL
   (+ 1 2))
 
-(fn add-entity-id [entity]
+(fn add-entity-id! [entity]
   (let [entity-id (lume.uuid)]
     (when (= :table (type entity))
       (set entity.id entity-id)
@@ -223,7 +226,7 @@
   ;; Set the initial level
   (let [{: entities} (level.level-number->level-data level-number)]
     (each [_ entity (pairs entities)]
-      (add-entity-id entity))
+      (add-entity-id! entity))
     (set state.level-number level-number)
     (set state.bricks entities))
   ;; Updating paddle entity
