@@ -57,33 +57,12 @@
         entities []]
     (each [y-index v (pairs matrix)]
       (each [x-index cell (pairs v)]
-        ;; TODO: this should not be done here but in the load function in play
-        (let [entity-id (lume.uuid)
-              entity (cell->entity cell { : x0 : y0 : x-index : y-index})]
+        (let [entity (cell->entity cell { : x0 : y0 : x-index : y-index})]
           (when (= :table (type entity))
-            (set entity.id entity-id)
             (table.insert entities entity))))) 
     {: matrix : entities : x0 : y0}))
 
 (comment 
   (level-number->level-data 1))
 
-(fn draw-cell-entity
-  [entity {: images : quads}]
-  (when (= :table (type entity))
-    (let [{: entity-type : x : y : width : height} entity]
-      (if (= entity-type :brick)
-        (let [{: color : tier} entity
-              quad (. (. quads.bricks color) tier)
-              atlas (. images :main)]
-          (love.graphics.draw atlas quad x y))))))
-
-(fn draw-level [{: level : images : quads}]
-  (let [{: entities} (level-number->level-data level)]
-    (each [_ entity (pairs entities)]
-      (draw-cell-entity entity { : images : quads}))))
-
-;; TODO: remove the draw level from here
-{: draw-level 
- : draw-cell-entity 
- : level-number->level-data}
+{: level-number->level-data}

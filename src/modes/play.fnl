@@ -1,4 +1,5 @@
 (local fennel (require :lib.fennel))
+(local lume (require :lib.lume))
 
 (local config (require :src.config))
 (local debug (require :src.debug))
@@ -199,7 +200,9 @@
         game-over (is-game-done {: resolved-collisions})]
     (if (is-game-done {: resolved-collisions})
       ;; TODO: Make a game over mode here
-      (set-mode :select-paddle {:assets (. state :assets)})
+      (do
+        (print (fennel.view state))
+        (set-mode :select-paddle {:assets (. state :assets)}))
       (do
        (update-ball {: dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
        (update-paddle {: dt :resolved-collisions (?. resolved-collisions :paddle)})))))
@@ -208,11 +211,19 @@
   ;; For flushing REPL
   (+ 1 2))
 
+(fn add-entity-id [entity]
+  (let [entity-id (lume.uuid)]
+    (when (= :table (type entity))
+      (set entity.id entity-id)
+      entity)))
+
 (fn activate [{: level-number : assets : quads : paddle}]
   (set state.quads quads)
   (set state.assets assets)
   ;; Set the initial level
   (let [{: entities} (level.level-number->level-data level-number)]
+    (each [_ entity (pairs entities)]
+      (add-entity-id entity))
     (set state.level-number level-number)
     (set state.bricks entities))
   ;; Updating paddle entity
