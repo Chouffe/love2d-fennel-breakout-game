@@ -60,20 +60,32 @@
   (love.graphics.setFont (. fonts :medium))
   (love.graphics.printf "Press p to resume" 0 (+ (/ config.VIRTUAL_HEIGHT 3) 35) config.VIRTUAL_WIDTH :center))
 
+(fn draw-brick [{: images : quads : brick}]
+  (let [{: x : y : width : height : color : tier} brick
+        quad (. (. quads.bricks color) tier)
+        atlas (. images :main)]
+    (love.graphics.draw atlas quad x y)))
+
+(fn draw-bricks [{: images : quads : bricks}]
+  (each [_ brick (pairs bricks)]
+    (draw-brick {: brick : images : quads}))) 
+
 (fn draw []
   (let [images (. state.assets :images)
         fonts (. state.assets :fonts)
         qds (. state :quads)]
     (draw-background-image images)
-    (when state.paused
-      (draw-pause fonts))
-    (level.draw-level {:level 1 : images :quads qds})
+    (draw-bricks {:bricks (. state :bricks) 
+                  :quads qds
+                  : images}) 
     (draw-paddle {:images images
                   :paddle (. state :paddle)
                   :quads (. state :quads)})
     (draw-ball {:images images
                 :ball (. state :ball)
                 :quads (. state :quads)})
+    (when state.paused
+      (draw-pause fonts))
     (when (. state :debug)
       (debug.display-fps (. fonts :small)))))
 
