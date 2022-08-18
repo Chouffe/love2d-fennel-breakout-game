@@ -51,7 +51,7 @@
          :height cell-height}))))
 
 ;; TODO: find a way to do it functionally instead
-(fn level->level-data [level]
+(fn level-number->level-data [level]
   (let [matrix level-matrix-1
         [x0 y0] [30 40]
         entities []]
@@ -66,7 +66,7 @@
     {: matrix : entities : x0 : y0}))
 
 (comment 
-  (level->level-data 1))
+  (level-number->level-data 1))
 
 (fn draw-cell-entity
   [entity {: images : quads}]
@@ -79,11 +79,11 @@
           (love.graphics.draw atlas quad x y))))))
 
 (fn draw-level [{: level : images : quads}]
-  (let [{: entities} (level->level-data level)]
+  (let [{: entities} (level-number->level-data level)]
     (each [_ entity (pairs entities)]
       (draw-cell-entity entity { : images : quads}))))
 
 ;; TODO: remove the draw level from here
 {: draw-level 
  : draw-cell-entity 
- : level->level-data}
+ : level-number->level-data}

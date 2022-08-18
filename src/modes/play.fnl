@@ -15,6 +15,8 @@
   {:debug true
    :paused false
    :level 1
+   :level-number 1
+   :bricks []
    :ball {:skin :blue
           :position {:x 80 :y 80 :dx -200 :dy -100}}
    :paddle {:skin :blue
@@ -199,9 +201,13 @@
   ;; For flushing REPL
   (+ 1 2))
 
-(fn activate [{: level : assets : quads : paddle}]
+(fn activate [{: level-number : assets : quads : paddle}]
   (set state.quads quads)
   (set state.assets assets)
+  ;; Set the initial level
+  (let [{: entities} (level.level-number->level-data level-number)]
+    (set state.level-number level-number)
+    (set state.bricks entities))
   ;; Updating paddle entity
   (let [{: width : height} (entity.paddle-dimensions {:paddle paddle :quads quads})
         default-paddle-speed 200
@@ -229,4 +235,7 @@
       (set state.debug (not state.debug))
       (print (fennel.view state)))))
 
-{: draw : update : activate : keypressed}
+{: draw 
+ : update 
+ : activate 
+ : keypressed}

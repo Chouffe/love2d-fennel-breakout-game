@@ -32,6 +32,7 @@
       (= mode-name :play)
       (let [default-paddle {:skin :blue :size-type :medium}]
         {:level 1
+         :level-number 1
          :assets loaded-assets
          :quads loaded-quads
          :paddle default-paddle})
