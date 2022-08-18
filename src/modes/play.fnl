@@ -73,17 +73,12 @@
 (fn draw []
   (let [images (. state.assets :images)
         fonts (. state.assets :fonts)
-        qds (. state :quads)]
+        quads (. state :quads)]
+    ;; Draw all elements in the scene
     (draw-background-image images)
-    (draw-bricks {:bricks (. state :bricks) 
-                  :quads qds
-                  : images}) 
-    (draw-paddle {:images images
-                  :paddle (. state :paddle)
-                  :quads (. state :quads)})
-    (draw-ball {:images images
-                :ball (. state :ball)
-                :quads (. state :quads)})
+    (draw-bricks {:bricks (. state :bricks) : quads : images}) 
+    (draw-paddle {:paddle (. state :paddle) : images : quads})
+    (draw-ball {:ball (. state :ball) : images : quads}) 
     (when state.paused
       (draw-pause fonts))
     (when (. state :debug)
