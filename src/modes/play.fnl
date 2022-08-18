@@ -128,6 +128,17 @@
       (table.insert collisions {:collision-type :ball-wall-bottom :data data}))
     ;; Ball collision with entities
     ;; TODO
+    (each [_ brick (pairs bricks)]
+      (when (hitbox.collides 
+              {:x brick.position.x 
+               :y brick.position.y 
+               :width brick.width
+               :height brick.height}
+              {:x ball.position.x 
+               :y ball.position.y 
+               :width ball-dim.width 
+               :height ball-dim.height})
+        (table.insert collisions {:collision-type :ball-brick :data data})))
     ;; Ball collision with paddle
     (when (hitbox.collides 
             {:x paddle.position.x 
@@ -153,6 +164,9 @@
       (= :paddle-wall-right collision-type)
       {:paddle {:position {:x (- config.VIRTUAL_WIDTH data.paddle-dim.width)
                            :y data.paddle.position.y}}}
+
+      ;; TODO: Brick
+      ; (= :ball-brick collision-type)
 
       ;; Ball
       (= :ball-paddle collision-type)

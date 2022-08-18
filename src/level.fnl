@@ -46,7 +46,6 @@
     (if (= cell-type :brick)
       (let [{: color : tier} cell]
         {:entity-type :brick 
-         ; : x : y
          :position {: x : y}
          : color 
          : tier 
