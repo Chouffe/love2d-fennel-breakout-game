@@ -47,6 +47,7 @@
       (let [{: color : tier} cell]
         {:entity-type :brick 
          :position {: x : y}
+         :visible? true
          : color 
          : tier 
          :width cell-width 

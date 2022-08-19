@@ -62,11 +62,12 @@
   (love.graphics.printf "Press p to resume" 0 (+ (/ config.VIRTUAL_HEIGHT 3) 35) config.VIRTUAL_WIDTH :center))
 
 (fn draw-brick [{: images : quads : brick}]
-  (let [{: position : width : height : color : tier} brick
+  (let [{: visible? : position : width : height : color : tier} brick
         {: x : y} position
         quad (. (. quads.bricks color) tier)
         atlas (. images :main)]
-    (love.graphics.draw atlas quad x y)))
+    (when visible?
+      (love.graphics.draw atlas quad x y))))
 
 (fn draw-bricks [{: images : quads : bricks}]
   (each [_ brick (pairs bricks)]
@@ -129,16 +130,17 @@
     ;; Ball collision with entities
     ;; TODO
     (each [_ brick (pairs bricks)]
-      (when (hitbox.collides 
-              {:x brick.position.x 
-               :y brick.position.y 
-               :width brick.width
-               :height brick.height}
-              {:x ball.position.x 
-               :y ball.position.y 
-               :width ball-dim.width 
-               :height ball-dim.height})
-        (table.insert collisions {:collision-type :ball-brick :data data})))
+      (when brick.visible?
+        (when (hitbox.collides 
+                {:x brick.position.x 
+                 :y brick.position.y 
+                 :width brick.width
+                 :height brick.height}
+                {:x ball.position.x 
+                 :y ball.position.y 
+                 :width ball-dim.width 
+                 :height ball-dim.height})
+          (table.insert collisions {:collision-type :ball-brick :data data}))))
     ;; Ball collision with paddle
     (when (hitbox.collides 
             {:x paddle.position.x 
@@ -166,7 +168,13 @@
                            :y data.paddle.position.y}}}
 
       ;; TODO: Brick
-      ; (= :ball-brick collision-type)
+      ;; Should we use event names like hit and then process them?
+      (= collision-type :brick)
+      (let [new-tier (- data.brick.tier 1)
+            visible? (<= 0 new-tier)]
+        {:brick {:visible? visible?
+                 :tier (if visible? new-tier data.brick.tier)
+                 :entity-id data.brick.entity-id}})
 
       ;; Ball
       (= :ball-paddle collision-type)
@@ -196,6 +204,12 @@
       (= :ball-wall-bottom collision-type) 
       {:ball-lost true})))
 
+(fn update-brick [{: dt : collisions : resolved-collisions}]
+  (let [{: bricks : ball} state]
+    ;; TODO: hit brick function that triggers
+    (print "updating brick")))
+    
+
 (fn update-ball [{: dt : collisions : data-resolved-collisions : resolved-collisions}]
   (let [{: ball : paddle} state
         {: position} ball
@@ -221,8 +235,9 @@
         (print (fennel.view state))
         (set-mode :select-paddle {:assets (. state :assets)}))
       (do
-       (update-ball {: dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
-       (update-paddle {: dt :resolved-collisions (?. resolved-collisions :paddle)})))))
+        (update-brick {: dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
+        (update-ball {: dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
+        (update-paddle {: dt :resolved-collisions (?. resolved-collisions :paddle)})))))
 
 (comment
   ;; For flushing REPL
