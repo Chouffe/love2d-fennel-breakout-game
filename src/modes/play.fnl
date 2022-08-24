@@ -221,7 +221,7 @@
         new-position {:x new-x :y new-y :dx dx :dy dy}]
     (set state.ball.position new-position)))
 
-(fn is-game-done [{: resolved-collisions}]
+(fn game-over? [{: resolved-collisions}]
   (?. resolved-collisions :ball-lost))
 
 (fn update [dt set-mode]
@@ -229,13 +229,13 @@
         collisions (detect-collisions {: ball : paddle : quads : bricks})
         resolved-collisions (-> collisions
                                 (lume.map handle-collision)
-                                (lume.reduce lume.merge {}))
-        game-over (is-game-done {: resolved-collisions})]
-    (if (is-game-done {: resolved-collisions})
+                                (lume.reduce lume.merge {}))]
+    (if (game-over? {: resolved-collisions})
       ;; TODO: Make a game over mode here
       (do
-        (print (fennel.view state))
-        (set-mode :select-paddle {:assets (. state :assets)}))
+        42)
+        ; (print (fennel.view state))
+        ; (set-mode :select-paddle {:assets (. state :assets)}))
       (do
         (update-brick {: dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
         (update-ball {: dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
