@@ -1,5 +1,14 @@
 (local lume (require :lib.lume))
 
+(fn vals [map]
+  (let [result []]
+    (each [k v (pairs map)]
+      (table.insert result v))
+    result))
+
+(comment
+  (vals {:a 12 :b 42 :c :hello}))
+
 (fn range [start end step]
   (let [result []]
     (for [i start end step]
