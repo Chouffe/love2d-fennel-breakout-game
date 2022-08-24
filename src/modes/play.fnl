@@ -17,6 +17,7 @@
    :paused false
    :level 1
    :level-number 1
+   :indexed-bricks {}
    :bricks []
    :ball {:skin :blue
           :position {:x 80 :y 80 :dx -200 :dy -100}}
@@ -250,6 +251,24 @@
     (when (= :table (type entity))
       (set entity.id entity-id)
       entity)))
+
+(fn index-by [key coll]
+  (lume.reduce coll 
+               (fn [acc x]
+                 (let [k (. x key)]
+                   (lume.merge acc {k x})))
+               {}))
+
+(comment
+  (lume.merge {:a 1} {:b 2})
+  (index-by :id [{:id "haha" :val :hello} {:id "bebe" :val "foobar"}])
+  (-> (lume.reduce [{:id "haha" :val :hello} {:id "bebe" :val "foobar"}] 
+                   (fn [acc x]
+                     (let [id (. x :id)]
+                       (print (pp acc))
+                       (lume.merge acc {id x})))
+                   {})))
+                    
 
 (fn activate [{: level-number : assets : quads : paddle}]
   (set state.quads quads)
