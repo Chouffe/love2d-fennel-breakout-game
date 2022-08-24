@@ -1,5 +1,5 @@
 (local lume (require :lib.lume))
-(local util (require :src.util))
+(local util-coll (require :src.util.coll))
 
 (fn skin->paddles [{: atlas : offset : skin}]
   (let [[offset-x offset-y] offset
@@ -48,9 +48,9 @@
     loaded-assets
     loaded-quads
     [atlas-width atlas-height]
-    (util.range 0 atlas-height 16)
-    (util.range 0 atlas-width 32)
-    (lume.slice (util.range 0 atlas-width 32) 1 6)))
+    (util-coll.range 0 atlas-height 16)
+    (util-coll.range 0 atlas-width 32)
+    (lume.slice (util-coll.range 0 atlas-width 32) 1 6)))
 
 (comment
   (lume.slice [1 2 3 4 5] 1 3))
@@ -59,18 +59,18 @@
   (let [brick-width 32
         brick-height 16
         (atlas-width atlas-height) (: atlas :getDimensions)
-        all-quads (-> (util.range 0 (- atlas-height brick-height) brick-height)
+        all-quads (-> (util-coll.range 0 (- atlas-height brick-height) brick-height)
                       (lume.map (fn [y]
-                                  (-> (util.range 0 (- atlas-width brick-width) brick-width)
+                                  (-> (util-coll.range 0 (- atlas-width brick-width) brick-width)
                                       (lume.map (fn [x] {:x x :y y})))))
                       (lume.reduce lume.concat [])
                       (lume.map (fn [{: x : y}]
                                   (love.graphics.newQuad x y brick-width brick-height atlas-width atlas-height))))]
-    {:blue (lume.map (util.range 1 4 1) (fn [idx] ( . all-quads idx))) 
-     :green (lume.map (util.range 5 8 1) (fn [idx] ( . all-quads idx)))
-     :red (lume.map (util.range 9 12 1) (fn [idx] ( . all-quads idx)))
-     :purple (lume.map (util.range 13 17 1) (fn [idx] ( . all-quads idx)))
-     :yellow (lume.map (util.range 17 20 1) (fn [idx] ( . all-quads idx)))}))
+    {:blue (lume.map (util-coll.range 1 4 1) (fn [idx] ( . all-quads idx))) 
+     :green (lume.map (util-coll.range 5 8 1) (fn [idx] ( . all-quads idx)))
+     :red (lume.map (util-coll.range 9 12 1) (fn [idx] ( . all-quads idx)))
+     :purple (lume.map (util-coll.range 13 17 1) (fn [idx] ( . all-quads idx)))
+     :yellow (lume.map (util-coll.range 17 20 1) (fn [idx] ( . all-quads idx)))}))
 
 (comment
   (let [assets (require :src.assets) 

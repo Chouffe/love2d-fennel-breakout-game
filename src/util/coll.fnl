@@ -19,4 +19,11 @@
 
   (lume.map))
 
-{: range}
+(fn index-by [key coll]
+  (lume.reduce coll 
+               (fn [acc x]
+                 (let [k (. x key)]
+                   (lume.merge acc {k x})))
+               {}))
+
+{: index-by : range}

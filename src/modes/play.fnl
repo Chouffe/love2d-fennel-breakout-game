@@ -7,6 +7,7 @@
 (local quads (require :src.quads))
 (local hitbox (require :src.hitbox))
 (local level (require :src.level))
+(local util-coll (require :src.util.coll))
 
 (local paddle-color-order 
   [:blue :green :red :purple])
@@ -260,8 +261,6 @@
                {}))
 
 (comment
-  (lume.merge {:a 1} {:b 2})
-  (index-by :id [{:id "haha" :val :hello} {:id "bebe" :val "foobar"}])
   (-> (lume.reduce [{:id "haha" :val :hello} {:id "bebe" :val "foobar"}] 
                    (fn [acc x]
                      (let [id (. x :id)]
