@@ -1,7 +1,6 @@
 (local fennel (require :lib.fennel))
 (local lume (require :lib.lume))
 (local config (require :src.config))
-(local util (require :src.util))
 
 ;; TODO: add other level-matrices
 (local level-matrix-1
