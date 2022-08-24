@@ -1,11 +1,7 @@
-(local fennel (require :lib.fennel))
 (local lume (require :lib.lume))
-(local push (require :lib.push))
-(local repl (require :lib.stdio))
 
 (local assets (require :src.assets))
 (local quads (require :src.quads))
-(local config (require :src.config))
 
 (var (mode mode-name) nil)
 
