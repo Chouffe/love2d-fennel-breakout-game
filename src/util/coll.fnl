@@ -35,4 +35,4 @@
                    (lume.merge acc {k x})))
                {}))
 
-{: index-by : range}
+{: index-by : range : vals}

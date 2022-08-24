@@ -83,7 +83,7 @@
         quads (. state :quads)]
     ;; Draw all elements in the scene
     (draw-background-image images)
-    (draw-bricks {:bricks (. state :bricks) : quads : images}) 
+    (draw-bricks {:bricks (util-coll.vals (. state.entities :indexed-bricks)) : quads : images}) 
     (draw-paddle {:paddle (. state :paddle) : images : quads})
     (draw-ball {:ball (. state :ball) : images : quads}) 
     (when state.paused
