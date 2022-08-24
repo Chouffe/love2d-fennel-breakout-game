@@ -18,12 +18,14 @@
    :paused false
    :level 1
    :level-number 1
-   :indexed-bricks {}
-   :bricks []
+   ; :indexed-bricks {}
+   ; :bricks []
    ;; TODO: move all the entities under entities (ball, paddle, bricks, etc)
-   :entities {:indexed-bricks {} :indexed-balls {} :indexed-paddles {}}
-   :ball {:skin :blue
-          :position {:x 80 :y 80 :dx -200 :dy -100}}
+   :entities {:indexed-bricks {} 
+              :indexed-balls {} 
+              :indexed-paddles {}}
+   ; :ball {:skin :blue
+   ;        :position {:x 80 :y 80 :dx -200 :dy -100}}
    :paddle {:skin :blue
             :speed 200
             :size-type :medium}
@@ -42,6 +44,14 @@
       ;; Scale factors on X and Y axis so that it fits the whole screen
       (/ config.VIRTUAL_WIDTH (- width 1)) 
       (/ config.VIRTUAL_HEIGHT (- height 1)))))
+
+(fn draw-paddle [{: paddle : images : quads}]
+  (let [{: size-type : skin : position} paddle 
+        {: x : y} position
+        {: width : height} (entity.paddle-dimensions {:paddle paddle :quads quads})
+        atlas (. images :main)
+        quad (. (. quads.paddles skin) size-type)]
+    (love.graphics.draw atlas quad x y)))
 
 (fn draw-paddle [{: paddle : images : quads}]
   (let [{: size-type : skin : position} paddle 
@@ -93,7 +103,7 @@
     (draw-background-image images)
     (draw-bricks {:bricks (util-coll.vals (. state.entities :indexed-bricks)) : quads : images}) 
     (draw-paddles {:paddles (util-coll.vals (. state.entities :indexed-paddles)) : images : quads})
-    (draw-ball {:ball (. state :ball) : images : quads}) 
+    (draw-balls {:balls (util-coll.vals (. state.entities :indexed-balls)) : images : quads}) 
     (when state.paused
       (draw-pause fonts))
     (when (. state :debug)
@@ -110,8 +120,18 @@
 
     x))
 
-(fn update-paddle [{: dt : resolved-collisions}]
+(fn update-paddle2 [{: dt : resolved-collisions}]
   (let [{: paddle : quads} state
+        {: speed : position} paddle
+        {: x} (if resolved-collisions resolved-collisions.position position)
+        key (if 
+              (love.keyboard.isDown :left) :left
+              (love.keyboard.isDown :right) :right
+              nil)]
+    (set state.paddle.position.x (handle-keyboard {:speed speed :x x :dt dt :key key}))))
+
+(fn update-paddle [{: paddle : dt : resolved-collisions}]
+  (let [{: quads} state
         {: speed : position} paddle
         {: x} (if resolved-collisions resolved-collisions.position position)
         key (if 
@@ -216,7 +236,7 @@
       (= :ball-wall-bottom collision-type) 
       {:ball-lost true})))
 
-(fn update-brick [{: dt : collisions : resolved-collisions}]
+(fn update-bricks [{: dt : collisions : resolved-collisions}]
   (let [{: bricks : ball} state]
     ;; TODO
     42))
@@ -224,20 +244,22 @@
     ; (print "updating brick")))
     
 
-(fn update-ball [{: dt : collisions : data-resolved-collisions : resolved-collisions}]
-  (let [{: ball : paddle} state
-        {: position} ball
+(fn update-ball [{: ball : dt : collisions : data-resolved-collisions : resolved-collisions}]
+  (let [{: position : entity-id} ball
         {: x : y : dx : dy} (if resolved-collisions resolved-collisions.position position)
         new-x (+ x (* dx dt)) 
         new-y (+ y (* dy dt)) 
         new-position {:x new-x :y new-y :dx dx :dy dy}]
-    (set state.ball.position new-position)))
+    (set ball.position new-position)))
 
 (fn game-over? [{: resolved-collisions}]
   (?. resolved-collisions :ball-lost))
 
 (fn update [dt set-mode]
-  (let [{: ball : paddle : quads : bricks} state
+  (let [{: quads : entities} state
+        paddle (lume.first (util-coll.vals state.entities.indexed-paddles))
+        ball (lume.first (util-coll.vals state.entities.indexed-balls))
+        bricks (util-coll.vals state.entities.indexed-bricks)
         collisions (detect-collisions {: ball : paddle : quads : bricks})
         resolved-collisions (-> collisions
                                 (lume.map handle-collision)
@@ -250,9 +272,9 @@
         ; (set-mode :select-paddle {:assets (. state :assets)}))
       (do
         ;; Should be update-bricks, update-balls, and update-paddles instead
-        (update-brick {: dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
-        (update-ball {: dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
-        (update-paddle {: dt :resolved-collisions (?. resolved-collisions :paddle)})))))
+        (update-bricks {: bricks : dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
+        (update-ball {: ball : dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
+        (update-paddle {:paddle paddle : dt :resolved-collisions (?. resolved-collisions :paddle)})))))
 
 (comment
   ;; For flushing REPL
@@ -265,17 +287,22 @@
       entity)))
 
 (fn initialize-entities [{: state : level-number : paddle : quads : assets}]
-  (let [{: entities} (level.level-number->level-data level-number)]
+  (let [{: entities} (level.level-number->level-data level-number)
+        brick-entities (lume.filter entities (fn [{: entity-type}] (= :brick entity-type)))]
     (each [_ entity (pairs entities)]
       (add-entity-id! entity))
 
-    ;; Balls: TODO
+    ;; Start with one ball only
+    (let [initial-ball (add-entity-id! 
+                         {:entity-type :ball 
+                          :skin :blue 
+                          :position {:x 80 :y 80 :dx -200 :dy -100}})]
+      (set state.entities.indexed-balls (util-coll.index-by :id [initial-ball])))
 
     ;; Bricks
-    (let [brick-entities (lume.filter entities (fn [{: entity-type}] (= :brick entity-type)))]
-      (set state.entities.indexed-bricks (util-coll.index-by :id brick-entities))
-      ;; TODO: get rid of state.bricks here
-      (set state.bricks brick-entities))
+    (set state.entities.indexed-bricks (util-coll.index-by :id brick-entities))
+    ;; TODO: get rid of state.bricks here
+    (set state.bricks brick-entities)
     (set state.level-number level-number))
 
   ;; Paddle
@@ -283,10 +310,12 @@
         default-paddle-speed config.GAMEPLAY.DEFAULT_PADDLE_SPEED
         default-paddle-position {:x (/ (- config.VIRTUAL_WIDTH width) 2) 
                                  :y (- config.VIRTUAL_HEIGHT height)}
-        initial-paddle (lume.merge paddle {:position default-paddle-position 
+        initial-paddle (lume.merge paddle {:entity-type :paddle
+                                           :position default-paddle-position 
                                            :speed config.GAMEPLAY.DEFAULT_PADDLE_SPEED})
         indexed-paddles (util-coll.index-by :id [(add-entity-id! initial-paddle)])]
     (set state.entities.indexed-paddles indexed-paddles)
+    ;; TODO: get rid of state.paddle here
     (set state.paddle initial-paddle)))
 
 (fn activate [{: level-number : assets : quads : paddle}]
