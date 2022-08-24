@@ -20,6 +20,8 @@
    :level-number 1
    :indexed-bricks {}
    :bricks []
+   ;; TODO: move all the entities under entities (ball, paddle, bricks, etc)
+   :entities {:indexed-bricks {} :indexed-balls {} :indexed-paddles {}}
    :ball {:skin :blue
           :position {:x 80 :y 80 :dx -200 :dy -100}}
    :paddle {:skin :blue
@@ -253,39 +255,29 @@
       (set entity.id entity-id)
       entity)))
 
-(fn index-by [key coll]
-  (lume.reduce coll 
-               (fn [acc x]
-                 (let [k (. x key)]
-                   (lume.merge acc {k x})))
-               {}))
-
-(comment
-  (-> (lume.reduce [{:id "haha" :val :hello} {:id "bebe" :val "foobar"}] 
-                   (fn [acc x]
-                     (let [id (. x :id)]
-                       (print (pp acc))
-                       (lume.merge acc {id x})))
-                   {})))
-                    
-
 (fn activate [{: level-number : assets : quads : paddle}]
   (set state.quads quads)
   (set state.assets assets)
   ;; Set the initial level
-  (let [{: entities} (level.level-number->level-data level-number)]
+  (let [{: entities : entitiess} (level.level-number->level-data level-number)]
     (each [_ entity (pairs entities)]
       (add-entity-id! entity))
-    (set state.level-number level-number)
-    (set state.bricks entities))
+
+    (let [brick-entities (lume.filter entities (fn [{: entity-type}] (= :brick entity-type)))]
+      (set state.entities.indexed-bricks (util-coll.index-by :id brick-entities))
+      ;; TODO: get rid of state.bricks here
+      (set state.bricks brick-entities))
+    (set state.level-number level-number))
   ;; Updating paddle entity
   (let [{: width : height} (entity.paddle-dimensions {:paddle paddle :quads quads})
         default-paddle-speed 200
         default-paddle-position {:x (/ (- config.VIRTUAL_WIDTH width) 2) 
-                                 :y (- config.VIRTUAL_HEIGHT height)}]
-    (set state.paddle paddle)
-    (set state.paddle.position default-paddle-position)
-    (set state.paddle.speed default-paddle-speed)))
+                                 :y (- config.VIRTUAL_HEIGHT height)}
+        initial-paddle (lume.merge paddle {:position default-paddle-position 
+                                           :speed config.GAMEPLAY.DEFAULT_PADDLE_SPEED})
+        indexed-paddles (util-coll.index-by :id [(add-entity-id! initial-paddle)])]
+    (set state.entities.indexed-paddles indexed-paddles)
+    (set state.paddle initial-paddle)))
 
 (fn keypressed [key set-mode]
   (if 
