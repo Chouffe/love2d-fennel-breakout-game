@@ -77,7 +77,8 @@
 
 (fn draw-bricks [{: images : quads : bricks}]
   (each [_ brick (pairs bricks)]
-    (draw-brick {: brick : images : quads}))) 
+    (when (not (?. brick :invisible?))
+      (draw-brick {: brick : images : quads})))) 
 
 (fn draw-entities [{: images : quads : entities}]
   (let [bricks (util-coll.vals entities.indexed-bricks)
@@ -140,8 +141,7 @@
       (table.insert collisions {:collision-type :ball-wall-top :data data}))
     (when (>= ball.position.y config.VIRTUAL_HEIGHT)
       (table.insert collisions {:collision-type :ball-wall-bottom :data data}))
-    ;; Ball collision with entities
-    ;; TODO
+
     (each [_ brick (pairs bricks)]
       (when (not brick.invisible?)
         (when (hitbox.collides 
@@ -153,10 +153,8 @@
                  :y ball.position.y 
                  :width ball-dim.width 
                  :height ball-dim.height})
-          (print "Collision with brick")
           (let [collision-data (lume.merge data {:brick brick})]
-            (print "Collision data")
-            (print (pp collision-data))
+            ;; TODO: add ball bouncing here
             (table.insert collisions {:collision-type :ball-brick :data collision-data})))))
 
     ;; Ball collision with paddle
@@ -185,8 +183,6 @@
       {:paddle {:position {:x (- config.VIRTUAL_WIDTH data.paddle-dim.width)
                            :y data.paddle.position.y}}}
 
-      ;; TODO: Brick
-      ;; Should we use event names like hit and then process them?
       (= collision-type :ball-brick)
       (let [new-tier (- data.brick.tier 1)
             invisible? (<= new-tier 0)]
@@ -228,15 +224,9 @@
   (when resolved-collisions
     (let [{: invisible? : tier : id} resolved-collisions
           brick (. indexed-bricks id)]
-      (print "Updating brick!")
-      (print (pp brick))
-      (print (pp indexed-bricks))
-      (print (pp resolved-collisions))
-      ; (when invisible?
-      ;   (set brick.invisible? invisible?))
+      (when invisible?
+        (set brick.invisible? invisible?))
       (set brick.tier tier))))
-    ;; TODO: hit brick function that triggers
-    ; (print "updating brick")))
     
 
 (fn update-ball [{: ball : dt : collisions : data-resolved-collisions : resolved-collisions}]
@@ -250,6 +240,11 @@
 (fn game-over? [{: resolved-collisions}]
   (?. resolved-collisions :ball-lost))
 
+(fn game-won? [{: entities}]
+  (-> entities.indexed-bricks
+      (util-coll.vals)
+      (lume.all (fn [{: invisible?}] invisible?))))
+
 (fn update [dt set-mode]
   (let [{: quads : entities} state
         paddle (lume.first (util-coll.vals state.entities.indexed-paddles))
@@ -260,12 +255,18 @@
         resolved-collisions (-> collisions
                                 (lume.map handle-collision)
                                 (lume.reduce lume.merge {}))]
-    (if (game-over? {: resolved-collisions})
-      ;; TODO: Make a game over mode here
+    (if 
+      (game-over? {: resolved-collisions})
       (do
-        42)
-        ; (print (fennel.view state))
-        ; (set-mode :select-paddle {:assets (. state :assets)}))
+        (print (fennel.view state))
+        (set-mode :select-paddle {:assets (. state :assets)}))
+
+      (game-won? {: entities})
+      (do
+        (print "You won the GAME!")
+        (print (fennel.view state))
+        (set-mode :select-paddle {:assets (. state :assets)}))
+
       (do
         ;; Should be update-bricks, update-balls, and update-paddles instead
         (update-bricks {:indexed-bricks state.entities.indexed-bricks : dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
