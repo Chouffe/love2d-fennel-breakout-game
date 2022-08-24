@@ -206,8 +206,10 @@
 
 (fn update-brick [{: dt : collisions : resolved-collisions}]
   (let [{: bricks : ball} state]
+    ;; TODO
+    42))
     ;; TODO: hit brick function that triggers
-    (print "updating brick")))
+    ; (print "updating brick")))
     
 
 (fn update-ball [{: dt : collisions : data-resolved-collisions : resolved-collisions}]

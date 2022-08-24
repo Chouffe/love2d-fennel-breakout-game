@@ -6,6 +6,7 @@
 (local assets (require :src.assets))
 (local quads (require :src.quads))
 (local config (require :src.config))
+(local modes (require :src.modes.core))
 
 (var (mode mode-name) nil)
 
