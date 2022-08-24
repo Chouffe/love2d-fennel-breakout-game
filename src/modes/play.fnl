@@ -15,7 +15,7 @@
 ;; TODO: change to var when done developping
 (global state 
   {:debug true
-   :paused false
+   :paused? false
    :balls-left 1
    :level-number 1
    :entities {:indexed-bricks {} 
@@ -95,7 +95,7 @@
     ;; Draw all elements in the scene
     (draw-background-image images)
     (draw-entities {: images : quads :entities state.entities})
-    (when state.paused
+    (when state.paused?
       (draw-pause fonts))
     (when (. state :debug)
       (debug.display-fps (. fonts :small)))))
@@ -262,7 +262,7 @@
     (update-paddle {: paddle : dt :resolved-collisions (?. resolved-collisions :paddle)})))
 
 (fn update [dt set-mode]
-  (let [{: quads : entities : balls-left} state]
+  (let [{: quads : entities : balls-left : paused?} state]
     (if 
       (game-over? {: balls-left})
       (do
@@ -275,7 +275,8 @@
         (print (fennel.view state))
         (set-mode :select-paddle {:assets (. state :assets)}))
 
-      (update-game-state {: entities : quads : dt}))))
+      (when (not paused?)
+        (update-game-state {: entities : quads : dt})))))
 
 (comment
   ;; For flushing REPL
@@ -330,7 +331,7 @@
     (= key "p")
     (do
       (: (. state.assets.sounds :pause) :play)
-      (set state.paused (not state.paused)))
+      (set state.paused? (not state.paused?)))
 
     ;; Debug
     (= key "d")
