@@ -62,11 +62,13 @@
   (when (~= :web (. args 1)) (repl.start)))
 
 (fn safely [f]
-  (xpcall f #(set-mode :error mode-name $ (fennel.traceback))))
+  (xpcall f #(set-mode :error {:old-mode mode-name 
+                               :msg $ 
+                               :traceback (fennel.traceback)})))
 
 (fn love.draw []
   (push:apply "start")
-  (when (and (= "table" (type mode)) mode.update)
+  (when (and (= "table" (type mode)) mode.draw)
     (safely mode.draw))
   (push:apply "end"))
 
