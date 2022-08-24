@@ -16,7 +16,6 @@
 (global state 
   {:debug true
    :paused false
-   :level 1
    :balls-left 1
    :level-number 1
    :entities {:indexed-bricks {} 
