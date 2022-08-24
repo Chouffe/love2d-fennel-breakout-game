@@ -17,6 +17,7 @@
   {:debug true
    :paused false
    :level 1
+   :balls-left 1
    :level-number 1
    :entities {:indexed-bricks {} 
               :indexed-balls {} 
@@ -218,7 +219,7 @@
                          :dy data.ball.position.dy}}}
 
       (= :ball-wall-bottom collision-type) 
-      {:ball-lost true})))
+      {:ball-lost? true})))
 
 (fn update-bricks [{: indexed-bricks : dt : collisions : resolved-collisions}]
   (when resolved-collisions
@@ -237,26 +238,34 @@
         new-position {:x new-x :y new-y :dx dx :dy dy}]
     (set ball.position new-position)))
 
-(fn game-over? [{: resolved-collisions}]
-  (?. resolved-collisions :ball-lost))
+(fn game-over? [{: balls-left}]
+  (<= balls-left 0))
 
 (fn game-won? [{: entities}]
   (-> entities.indexed-bricks
       (util-coll.vals)
       (lume.all (fn [{: invisible?}] invisible?))))
 
-(fn update [dt set-mode]
-  (let [{: quads : entities} state
-        paddle (lume.first (util-coll.vals state.entities.indexed-paddles))
+(fn update-game-state [{: dt : entities : quads}]
+  (let [paddle (lume.first (util-coll.vals state.entities.indexed-paddles))
         ball (lume.first (util-coll.vals state.entities.indexed-balls))
-        bricks (util-coll.vals state.entities.indexed-bricks) 
+        {: indexed-bricks} entities
+        bricks (util-coll.vals indexed-bricks)
         collisions (detect-collisions {: ball : paddle : quads : bricks})
         ;; TODO: this should aggregate and not take only the last event
         resolved-collisions (-> collisions
                                 (lume.map handle-collision)
                                 (lume.reduce lume.merge {}))]
+    (when (. resolved-collisions :ball-lost?)
+      (set state.balls-left (- state.balls-left 1)))
+    (update-bricks {: indexed-bricks : dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
+    (update-ball {: ball : dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
+    (update-paddle {: paddle : dt :resolved-collisions (?. resolved-collisions :paddle)})))
+
+(fn update [dt set-mode]
+  (let [{: quads : entities : balls-left} state]
     (if 
-      (game-over? {: resolved-collisions})
+      (game-over? {: balls-left})
       (do
         (print (fennel.view state))
         (set-mode :select-paddle {:assets (. state :assets)}))
@@ -267,11 +276,7 @@
         (print (fennel.view state))
         (set-mode :select-paddle {:assets (. state :assets)}))
 
-      (do
-        ;; Should be update-bricks, update-balls, and update-paddles instead
-        (update-bricks {:indexed-bricks state.entities.indexed-bricks : dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
-        (update-ball {: ball : dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
-        (update-paddle {:paddle paddle : dt :resolved-collisions (?. resolved-collisions :paddle)})))))
+      (update-game-state {: entities : quads : dt}))))
 
 (comment
   ;; For flushing REPL
