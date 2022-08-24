@@ -123,6 +123,7 @@
 (fn detect-collisions [{: bricks : ball : paddle : quads}]
   (let [paddle-dim (entity.paddle-dimensions {:paddle paddle :quads quads})
         ball-dim (entity.ball-dimensions {:ball ball :quads quads})
+        ;; TODO: dimensions should live on entities not here
         data {:paddle-dim paddle-dim :ball-dim ball-dim :ball ball :paddle paddle :quads quads}
         collisions []]
     ;; Paddle collision with walls
@@ -142,7 +143,7 @@
     ;; Ball collision with entities
     ;; TODO
     (each [_ brick (pairs bricks)]
-      (when brick.visible?
+      (when (not brick.invisible?)
         (when (hitbox.collides 
                 {:x brick.position.x 
                  :y brick.position.y 
@@ -152,7 +153,12 @@
                  :y ball.position.y 
                  :width ball-dim.width 
                  :height ball-dim.height})
-          (table.insert collisions {:collision-type :ball-brick :data data}))))
+          (print "Collision with brick")
+          (let [collision-data (lume.merge data {:brick brick})]
+            (print "Collision data")
+            (print (pp collision-data))
+            (table.insert collisions {:collision-type :ball-brick :data collision-data})))))
+
     ;; Ball collision with paddle
     (when (hitbox.collides 
             {:x paddle.position.x 
@@ -181,14 +187,16 @@
 
       ;; TODO: Brick
       ;; Should we use event names like hit and then process them?
-      (= collision-type :brick)
+      (= collision-type :ball-brick)
       (let [new-tier (- data.brick.tier 1)
-            visible? (<= 0 new-tier)]
-        {:brick {:visible? visible?
-                 :tier (if visible? new-tier data.brick.tier)
-                 :entity-id data.brick.entity-id}})
+            invisible? (<= new-tier 0)]
+        {:brick {:invisible? invisible?
+                 :tier (if invisible? data.brick.tier new-tier)
+                 :hello :foo
+                 :id data.brick.id}})
 
       ;; Ball
+      ;; TODO: restructure to make it possible to have multiple balls
       (= :ball-paddle collision-type)
       {:ball {:position {:x data.ball.position.x 
                          :y (- config.VIRTUAL_HEIGHT data.paddle-dim.height data.ball-dim.height paddle-ball-margin)
@@ -216,10 +224,17 @@
       (= :ball-wall-bottom collision-type) 
       {:ball-lost true})))
 
-(fn update-bricks [{: dt : collisions : resolved-collisions}]
-  (let [{: bricks : ball} state]
-    ;; TODO
-    42))
+(fn update-bricks [{: indexed-bricks : dt : collisions : resolved-collisions}]
+  (when resolved-collisions
+    (let [{: invisible? : tier : id} resolved-collisions
+          brick (. indexed-bricks id)]
+      (print "Updating brick!")
+      (print (pp brick))
+      (print (pp indexed-bricks))
+      (print (pp resolved-collisions))
+      ; (when invisible?
+      ;   (set brick.invisible? invisible?))
+      (set brick.tier tier))))
     ;; TODO: hit brick function that triggers
     ; (print "updating brick")))
     
@@ -239,8 +254,9 @@
   (let [{: quads : entities} state
         paddle (lume.first (util-coll.vals state.entities.indexed-paddles))
         ball (lume.first (util-coll.vals state.entities.indexed-balls))
-        bricks (util-coll.vals state.entities.indexed-bricks)
+        bricks (util-coll.vals state.entities.indexed-bricks) 
         collisions (detect-collisions {: ball : paddle : quads : bricks})
+        ;; TODO: this should aggregate and not take only the last event
         resolved-collisions (-> collisions
                                 (lume.map handle-collision)
                                 (lume.reduce lume.merge {}))]
@@ -252,7 +268,7 @@
         ; (set-mode :select-paddle {:assets (. state :assets)}))
       (do
         ;; Should be update-bricks, update-balls, and update-paddles instead
-        (update-bricks {: bricks : dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
+        (update-bricks {:indexed-bricks state.entities.indexed-bricks : dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
         (update-ball {: ball : dt : collisions :resolved-collisions (?. resolved-collisions :ball)})
         (update-paddle {:paddle paddle : dt :resolved-collisions (?. resolved-collisions :paddle)})))))
 
