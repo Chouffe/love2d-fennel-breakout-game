@@ -8,46 +8,6 @@
 (local config (require :src.config))
 (local modes (require :src.modes.core))
 
-(var (mode mode-name) nil)
-
-(fn set-mode [new-mode-name args]
-  (let [modes-path :src.modes.
-        mode-path (.. modes-path new-mode-name)]
-    (set (mode mode-name) (values (require (.. modes-path new-mode-name)) new-mode-name))
-    (when mode.activate
-      (match (pcall mode.activate args)
-        (false msg) (print mode-name "activate error" msg)))))
-
-(fn live-reload-mode [mode-name args]
-  (let [mode-path (.. :src.modes. mode-name)]
-    (lume.hotswap mode-path)
-    ;; TODO: add all files that could have changed
-    (lume.hotswap :src.quads)
-    (lume.hotswap :src.assets)
-    (set-mode mode-name args)))
-
-(fn mode-name->default-args [mode-name]
-  (let [loaded-assets (assets.load-assets)
-        loaded-quads (quads.load-quads (. loaded-assets :images))]
-    (if
-      (= mode-name :play)
-      (let [default-paddle {:skin :blue :size-type :medium}]
-        {:level 1
-         :level-number 1
-         :assets loaded-assets
-         :quads loaded-quads
-         :paddle default-paddle})
-    
-      (= mode-name :select-paddle)
-      {:assets loaded-assets
-       :quads loaded-quads}
-
-      (= mode-name :start)
-      {:assets loaded-assets
-       :quads loaded-quads}
-      
-      {})))
-
 (fn love.load [args]
   (love.graphics.setDefaultFilter "nearest" "nearest")
   (push:setupScreen 
@@ -59,26 +19,26 @@
      :fullscreen false
      :resizable true})
   (let [loaded-assets (assets.load-assets)]
-    (set-mode :start {:assets loaded-assets}))
+    (modes.set-mode :start {:assets loaded-assets}))
   (when (~= :web (. args 1)) (repl.start)))
 
 (fn safely [f]
-  (xpcall f #(set-mode :error {:old-mode mode-name 
-                               :msg $ 
-                               :traceback (fennel.traceback)})))
+  (xpcall f #(modes.set-mode :error {:old-mode :start :msg $ :traceback (fennel.traceback)})))
 
 (fn love.draw []
   (push:apply "start")
-  (when (and (= "table" (type mode)) mode.draw)
-    (safely mode.draw))
+  (let [mode (modes.get-mode)]
+    (when (and (= "table" (type mode)) mode.draw)
+      (safely mode.draw)))
   (push:apply "end"))
 
 (fn love.resize [w h]
   (push:resize w h))
 
 (fn love.update [dt]
-  (when (and (= "table" (type mode)) mode.update)
-    (safely #(mode.update dt set-mode))))
+  (let [mode (modes.get-mode)]
+    (when (and (= "table" (type mode)) mode.update)
+      (safely #(mode.update dt modes.set-mode)))))
 
 (fn love.keypressed [key]
   (print (.. ">>> key pressed: " key))
@@ -89,13 +49,14 @@
 
     ;; Hot reload the current mode using a shortcut
     (= key "r")
-    (let [args (mode-name->default-args mode-name)]
+    (let [mode-name (modes.get-mode-name)
+          args (modes.mode-name->default-args mode-name)]
       (print (fennel.view args))
-      (live-reload-mode mode-name args))
+      (modes.live-reload-mode mode-name args))
 
     ;; add what each keypress should do in each mode
-    (safely #(mode.keypressed key set-mode))))
-
+    (let [mode (modes.get-mode)]
+      (safely #(mode.keypressed key modes.set-mode)))))
 
 (comment 
   ;; REPL driven for hot reloading a mode
@@ -103,5 +64,5 @@
   ;; 2. Evaluate the s-expression below
   ;; 3. Iterate quickly on the draw function or update logic
   (let [mode-name :play
-        args (mode-name->default-args mode-name)]
-    (live-reload-mode mode-name args)))
+        args (modes.mode-name->default-args mode-name)]
+    (modes.live-reload-mode mode-name args)))
