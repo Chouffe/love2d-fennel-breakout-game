@@ -2,6 +2,8 @@
 (local lume (require :lib.lume))
 (local push (require :lib.push))
 (local repl (require :lib.stdio))
+(local clj (require :cljlib))
+(import-macros cljm :cljlib)
 
 (local assets (require :src.assets))
 (local quads (require :src.quads))
