@@ -9,3 +9,10 @@ Topics covered:
 * Music
 * Assets loading
 * Neovim + Conjure setup
+
+## Play the game
+
+Install `love2d` and then run the following command:
+```
+love .
+```
