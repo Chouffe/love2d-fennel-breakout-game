@@ -200,20 +200,24 @@
         new-position {:x new-x :y new-y :dx dx :dy dy}]
     (set ball.position new-position)))
 
-(fn collision-type->sound-effect-name 
-  [collision-type]
+(fn collision->sound-effect-name 
+  [{: collision-type : data}]
   (match collision-type
     :ball-wall-left :wall-hit
     :ball-wall-right :wall-hit
     :ball-wall-top :wall-hit
     :ball-wall-bottom :hurt
     :ball-paddle :paddle-hit
-    :ball-brick :brick-hit-1
+
+    :ball-brick 
+    (match data.brick.tier
+      1 :brick-hit-1
+      _ :brick-hit-2)
     _ nil))
 
 (fn collisions->sound-effects! [{: sounds : collisions}]
   (each [_ collision (pairs collisions)]
-    (let [sound-effect-name (collision-type->sound-effect-name collision.collision-type)]
+    (let [sound-effect-name (collision->sound-effect-name collision)]
       (when sound-effect-name
         (: (. sounds sound-effect-name) :play)))))
 
