@@ -1,9 +1,8 @@
 (local config (require :src.config))
 (local util-render (require :src.util.render))
 
-(global state 
-  {:debug true
-   :highlighted :play
+(var state 
+  {:highlighted :play
    :quads {}
    :assets {}})
 
@@ -57,10 +56,10 @@
 (fn update [dt set-mode])
 
 (fn activate [{: assets : quads}]
-  ; (assets.sounds.music:setLooping true)
-  ; (assets.sounds.music:play)
-  (set state.quads quads)
-  (set state.assets assets))
+  (let [initial-state {: quads : assets :highlighted :play}]
+    (set state initial-state))
+  (assets.sounds.music:setLooping true)
+  (assets.sounds.music:play))
 
 (fn keypressed [key set-mode]
   (if 
