@@ -1,41 +1,10 @@
-(local debug (require :src.debug))
 (local config (require :src.config))
+(local util-render (require :src.util.render))
 
-(var state 
+(global state 
   {:debug true
    :highlighted :play
    :assets {}})
-
-;; Used for poking at it via the REPL
-(global si state)
-
-(comment
-  ;; Change debug rendering
-  (set si.debug false)
-  (set si.debug true)
-
-  ;; Change menu selection with the REPL
-  (set si.highlighted :high-scores)
-  (set si.highlighted :play))
-
-(comment
-  (let [image (. si.assets.images :background)
-        (width height) (image:getDimensions)]
-    [width height]
-    (love.graphics.draw image 0 0 0 width height)))
-
-(fn draw-background-image [images]
-  (let [background-image (. images :background)
-        (width height) (background-image:getDimensions)]
-    (love.graphics.draw 
-      background-image 
-      ;; Draw at coordinates 0 0
-      0 0 
-      ;; No rotation
-      0 
-      ;; Scale factors on X and Y axis so that it fits the whole screen
-      (/ config.VIRTUAL_WIDTH (- width 1)) 
-      (/ config.VIRTUAL_HEIGHT (- height 1)))))
 
 (fn draw-title [fonts]
   (love.graphics.setFont (. fonts :large))
@@ -78,11 +47,11 @@
     (love.graphics.setColor 1 1 1 1)))
   
 (fn draw []
-  (draw-background-image (. state.assets :images))
+  (util-render.draw-background-image (. state.assets :images))
   (draw-title (. state.assets :fonts))
   (draw-menu (. state.assets :fonts) (. state :highlighted))
   (when (. state :debug)
-    (debug.display-fps state.assets.fonts.small)))
+    (util-render.draw-fps state.assets.fonts.small)))
 
 (fn update [dt set-mode])
 

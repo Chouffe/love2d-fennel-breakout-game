@@ -1,7 +1,6 @@
 (local fennel (require :lib.fennel))
 
 (local config (require :src.config))
-(local debug (require :src.debug))
 (local entity (require :src.entity))
 (local quads (require :src.quads))
 (local util-coll (require :src.util.coll))

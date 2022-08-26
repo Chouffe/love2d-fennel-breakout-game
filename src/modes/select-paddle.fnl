@@ -1,8 +1,8 @@
 (local fennel (require :lib.fennel))
 
 (local config (require :src.config))
-(local debug (require :src.debug))
 (local quads (require :src.quads))
+(local util-render (require :src.util.render))
 
 (local paddle-skin-order 
   [:blue :green :red :purple])
@@ -19,27 +19,12 @@
       (>= index (length paddle-skin-order)) nil
       (. paddle-skin-order (+ index 1)))))
 
-(var state 
-  {:debug true
-   :paused false
+(global state 
+  {:debug false
    :paddle {:skin :blue
             :size-type :medium}
    :quads {}
    :assets {}})
-
-(global ssp state)
-
-(comment
-  _G
-  (. _G :ssp)
-
-  (let [atlas (. _G.sp.assets.images :main)]
-    (quads.paddles atlas)
-    (: atlas :getWidth)
-    (: atlas :getHeight))
-  ;; Change debug rendering
-  (set sp.debug false)
-  (set sp.debug true))
 
 (fn draw-background-image [images]
   (let [background-image (. images :background)
@@ -100,42 +85,25 @@
       (- config.VIRTUAL_WIDTH width side-margin)
       (- config.VIRTUAL_HEIGHT height bottom-margin))))
 
-(comment
-  (+ 1 2))
-
-(fn draw-pause [fonts]
-  (love.graphics.setFont (. fonts :large))
-  (love.graphics.printf "Game paused" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center)
-  (love.graphics.setFont (. fonts :medium))
-  (love.graphics.printf "Press p to resume" 0 (+ (/ config.VIRTUAL_HEIGHT 3) 35) config.VIRTUAL_WIDTH :center))
-
 (fn draw []
-  (draw-background-image (. state.assets :images))
-  (when state.paused
-    (draw-pause (. state.assets :fonts)))
-  (draw-title {:fonts state.assets.fonts})
-  (draw-paddle {:images (. state.assets :images)
-                :paddle (. state :paddle)
-                :quads (. state :quads)})
-  (draw-arrows {:images (. state.assets :images)
-                :quads (. state :quads)
-                :current-paddle-skin (. state.paddle :skin)})
+  (util-render.draw-background-image (. state.assets :images))
+  (draw-title 
+    {:fonts state.assets.fonts})
+  (draw-paddle 
+    {:images (. state.assets :images)
+     :paddle (. state :paddle)
+     :quads (. state :quads)})
+  (draw-arrows 
+    {:images (. state.assets :images)
+     :quads (. state :quads)
+     :current-paddle-skin (. state.paddle :skin)})
   (when (. state :debug)
-    (debug.display-fps state.assets.fonts.small)))
-
-(fn update [dt set-mode])
+    (util-render.draw-fps state.assets.fonts.small)))
 
 (fn activate [{: assets}]
   (let [loaded-quads (quads.load-quads (. assets :images))] 
     (set state.quads loaded-quads))
   (set state.assets assets))
-
-(comment
-  (. [1 2 3 4 5 6] 3)
-  (length [1 2 3])
-  (lume.first [1 2 3])
-  (lume.find [:a :b] :a)
-  (lume.find [:a :b] :c))
 
 (fn keypressed [key set-mode]
   (if 
@@ -143,7 +111,8 @@
     (= key :escape)
     (love.event.quit)
 
-    (or (= key :enter) (= key :return))
+    (or (= key :enter) 
+        (= key :return))
     (set-mode :serve {:level 1
                       :level-number 1
                       :assets state.assets
@@ -169,4 +138,4 @@
       (set state.debug (not state.debug))
       (print (fennel.view state)))))
 
-{: draw : update : activate : keypressed}
+{: draw : activate : keypressed}

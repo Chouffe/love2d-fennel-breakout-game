@@ -2,7 +2,6 @@
 (local lume (require :lib.lume))
 
 (local config (require :src.config))
-(local debug (require :src.debug))
 (local entity (require :src.entity))
 (local entity-render (require :src.entity.render))
 (local quads (require :src.quads))
@@ -14,7 +13,7 @@
 
 ;; TODO: change to var when done developping
 (global state 
-  {:debug true
+  {:debug false
    :paused? false
    :balls-left 1
    :level-number 1
