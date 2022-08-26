@@ -211,12 +211,11 @@
     :ball-brick :brick-hit-1
     _ nil))
 
-(fn play-sound-effects! [{: sounds : collisions}]
+(fn collisions->sound-effects! [{: sounds : collisions}]
   (each [_ collision (pairs collisions)]
     (let [sound-effect-name (collision-type->sound-effect-name collision.collision-type)]
       (when sound-effect-name
         (: (. sounds sound-effect-name) :play)))))
-    
 
 (fn update-game-state [{: dt : entities : quads}]
   (let [paddle (lume.first (util-coll.vals state.entities.indexed-paddles))
@@ -228,7 +227,7 @@
         resolved-collisions (-> collisions
                                 (lume.map handle-collision)
                                 (lume.reduce lume.merge {}))]
-    (play-sound-effects! {: collisions :sounds state.assets.sounds})
+    (collisions->sound-effects! {: collisions :sounds state.assets.sounds})
     (when (. resolved-collisions :ball-lost?)
       (set state.balls-left (- state.balls-left 1)))
     (update-bricks {: indexed-bricks : dt : collisions :resolved-collisions (?. resolved-collisions :brick)})
@@ -245,6 +244,7 @@
       (let [paddle (-> state.entities.indexed-paddles
                        (util-coll.vals)
                        (lume.first))]
+        (: assets.sounds.victory :play)
         (set-mode :level-cleared {: quads : paddle : assets : level-number})) 
 
       (when (not paused?)
