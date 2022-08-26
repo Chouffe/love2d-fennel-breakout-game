@@ -2,7 +2,7 @@
 (local lume (require :lib.lume))
 
 (local config (require :src.config))
-(local entity (require :src.entity))
+(local entity (require :src.entity.core))
 (local entity-render (require :src.entity.render))
 (local quads (require :src.quads))
 (local hitbox (require :src.hitbox))
