@@ -13,4 +13,3 @@
   {:width 32 :height 16})
 
 {: paddle-dimensions : ball-dimensions : brick-dimensions}
-
