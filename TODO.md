@@ -5,7 +5,6 @@
 * Make it possible to control the ball with the paddle
 * Add a score system
 * Implement some particle systems when there is a collision
-* Implement the sound effect
 * Add a high score system and the ability to persist them
 * Refactor this game with ECS
   * Move walls as regular entities and handle collisions in the same way
