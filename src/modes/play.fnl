@@ -220,21 +220,16 @@
     (update-paddle {: paddle : dt :resolved-collisions (?. resolved-collisions :paddle)})))
 
 (fn update [dt set-mode]
-  (let [{: quads : entities : balls-left : paused?} state]
+  (let [{: level-number : assets : quads : entities : balls-left : paused?} state]
     (if 
       (game-logic.game-over? {: balls-left})
-      (do
-        (print (fennel.view state))
-        (set-mode :select-paddle {:assets (. state :assets)}))
+      (set-mode :game-over {: assets : quads : level-number})
 
       (game-logic.game-won? {: entities})
       (let [paddle (-> state.entities.indexed-paddles
                        (util-coll.vals)
                        (lume.first))]
-        (set-mode :level-cleared {:quads state.quads
-                                  :paddle paddle
-                                  :assets state.assets
-                                  :level-number state.level-number}))
+        (set-mode :level-cleared {: quads : paddle : assets : level-number})) 
 
       (when (not paused?)
         (update-game-state {: entities : quads : dt})))))
