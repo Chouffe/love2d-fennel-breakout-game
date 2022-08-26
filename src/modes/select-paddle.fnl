@@ -1,7 +1,7 @@
 (local fennel (require :lib.fennel))
 
 (local config (require :src.config))
-(local quads (require :src.quads))
+(local quads (require :src.assets.quads))
 (local util-render (require :src.util.render))
 
 (local paddle-skin-order 
