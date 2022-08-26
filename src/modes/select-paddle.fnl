@@ -109,7 +109,6 @@
                         :quads state.quads
                         :paddle state.paddle}))
 
-    ;; TODO: add the sound effect
     (= key "right")
     (let [new-skin (next-paddle-skin paddle-skin-order state.paddle.skin)]
       (if new-skin
@@ -119,7 +118,6 @@
         (state.assets.sounds.no-select:play)))
     
 
-    ;; TODO: add the sound effect
     (= key "left")
     (let [new-skin (previous-paddle-skin paddle-skin-order state.paddle.skin)]
       (if new-skin
