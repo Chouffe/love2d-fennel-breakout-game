@@ -20,13 +20,18 @@
    :quads {}
    :assets {}})
 
+(fn draw-instructions [{: fonts}]
+  (love.graphics.setFont (. fonts :medium))
+  (love.graphics.printf (.. "Press Enter to serve") 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center))
+
 (fn draw []
-  (let [images (. state.assets :images)
-        fonts (. state.assets :fonts)
-        quads (. state :quads)]
+  (let [{: assets : quads : level-number} state 
+        {: images : fonts} assets]
     ;; Draw all elements in the scene
     (util-render.draw-background-image images)
     (entity-render.draw-entities {: images : quads :entities state.entities})
+    (draw-instructions {: fonts})
+    (util-render.draw-level-number {: fonts : level-number})
     (when (. state :debug)
       (util-render.draw-fps (. fonts :small)))))
 

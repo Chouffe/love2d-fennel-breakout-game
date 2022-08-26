@@ -27,4 +27,8 @@
       ;; Draw at (5, 5) from top left
       5 5)))
 
-{: draw-pause : draw-fps : draw-background-image}
+(fn draw-level-number [{: fonts : level-number}]
+  (love.graphics.setFont (. fonts :small))
+  (love.graphics.printf (.. "Level " (tostring level-number)) 5 5 config.VIRTUAL_WIDTH :left))
+
+{: draw-pause : draw-fps : draw-background-image : draw-level-number}

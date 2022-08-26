@@ -24,12 +24,12 @@
    :assets {}})
 
 (fn draw []
-  (let [images (. state.assets :images)
-        fonts (. state.assets :fonts)
-        quads (. state :quads)]
+  (let [{: assets : quads : level-number} state 
+        {: images : fonts} assets]
     ;; Draw all elements in the scene
     (util-render.draw-background-image images)
     (entity-render.draw-entities {: images : quads :entities state.entities})
+    (util-render.draw-level-number {: fonts : level-number})
     (when state.paused?
       (util-render.draw-pause fonts))
     (when (. state :debug)

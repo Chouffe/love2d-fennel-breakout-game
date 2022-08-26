@@ -13,7 +13,7 @@
 
 (fn draw-title [{: fonts : level-number}]
   (love.graphics.setFont (. fonts :medium))
-  (love.graphics.printf (.. "You cleared level " (tostring level-number) " !") 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center)
+  (love.graphics.printf (.. "You cleared level " (tostring level-number) "!") 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center)
   (love.graphics.printf (.. "Press Enter to continue") 0 (+ (/ config.VIRTUAL_HEIGHT 3) 30) config.VIRTUAL_WIDTH :center))
   
 (fn draw []
