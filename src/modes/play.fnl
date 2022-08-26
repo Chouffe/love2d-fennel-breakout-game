@@ -11,7 +11,6 @@
 (local util-render (require :src.util.render))
 (local game-logic (require :src.game-logic.core))
 
-;; TODO: change to var when done developping
 (var state 
   {:debug false
    :paused? false

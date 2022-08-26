@@ -21,6 +21,7 @@
    :assets {}})
 
 (fn draw-instructions [{: fonts}]
+  (util-render.draw-black-overlay)
   (love.graphics.setFont (. fonts :medium))
   (love.graphics.printf (.. "Press Enter to serve") 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center))
 

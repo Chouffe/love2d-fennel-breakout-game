@@ -1,6 +1,12 @@
 (local config (require :src.config))
 
+(fn draw-black-overlay []
+  (love.graphics.setColor 0 0 0 0.7)
+  (love.graphics.rectangle :fill 0 0 config.VIRTUAL_WIDTH config.VIRTUAL_HEIGHT 0 0 0)
+  (love.graphics.setColor 1 1 1 1))
+
 (fn draw-pause [fonts]
+  (draw-black-overlay)
   (love.graphics.setFont (. fonts :large))
   (love.graphics.printf "Game paused" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center)
   (love.graphics.setFont (. fonts :medium))
@@ -31,4 +37,8 @@
   (love.graphics.setFont (. fonts :small))
   (love.graphics.printf (.. "Level " (tostring level-number)) 5 5 config.VIRTUAL_WIDTH :left))
 
-{: draw-pause : draw-fps : draw-background-image : draw-level-number}
+{: draw-pause 
+ : draw-fps 
+ : draw-background-image 
+ : draw-level-number 
+ : draw-black-overlay}
