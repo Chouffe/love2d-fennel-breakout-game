@@ -203,10 +203,10 @@
 (fn collision-type->sound-effect-name 
   [collision-type]
   (match collision-type
-    :paddle-wall-left :wall-hit
-    :paddle-wall-right :wall-hit
-    :paddle-wall-top :wall-hit
-    :paddle-wall-bottom :hurt
+    :ball-wall-left :wall-hit
+    :ball-wall-right :wall-hit
+    :ball-wall-top :wall-hit
+    :ball-wall-bottom :hurt
     :ball-paddle :paddle-hit
     :ball-brick :brick-hit-1
     _ nil))
