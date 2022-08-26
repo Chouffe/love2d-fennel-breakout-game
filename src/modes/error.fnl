@@ -5,7 +5,7 @@
 ;; Since we can't know which module needs to be reloaded, we rely on the user
 ;; doing a ,reload foo in the repl.
 
-(var state {:trace false})
+(var state {})
 
 (local explanation "Press `escape` to quit.
 Press `space` to return to the previous mode after reloading in the repl.
@@ -33,6 +33,7 @@ Press `t` to display the stacktrace.")
 (fn activate [{: old-mode : msg : traceback}]
   (print msg)
   (print traceback)
-  (set state {: old-mode : msg : traceback}))
+  (let [initial-state {:trace false : old-mode : msg : traceback}]
+    (set state initial-state)))
 
 {: draw : keypressed : activate}
