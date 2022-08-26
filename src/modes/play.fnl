@@ -123,8 +123,14 @@
 (fn detect-collisions [{: bricks : ball : paddle : quads : dt}]
   (let [paddle-dim (entity.paddle-dimensions {:paddle paddle :quads quads})
         ball-dim (entity.ball-dimensions {:ball ball :quads quads})
+        brick-dim (entity.brick-dimensions {:brick {} : quads})
         ;; TODO: dimensions should live on entities not here
-        data {:paddle-dim paddle-dim :ball-dim ball-dim :ball ball :paddle paddle :quads quads}
+        data {:paddle-dim paddle-dim 
+              :ball-dim ball-dim 
+              :brick-dim brick-dim 
+              :ball ball 
+              :paddle paddle 
+              :quads quads}
         collisions []]
     ;; Paddle collision with walls
     (when (<= paddle.position.x 0)
@@ -192,8 +198,27 @@
 
       (= collision-type :ball-brick)
       (let [new-tier (- data.brick.tier 1)
-            invisible? (<= new-tier 0)]
-        {:brick {:invisible? invisible?
+            invisible? (<= new-tier 0)
+            new-ball-position (match data.ball-impact
+                                :top {:x data.ball.position.x
+                                      :y (+ 1 data.brick.position.y data.brick-dim.height)
+                                      :dx data.ball.position.dx
+                                      :dy (- 0 data.ball.position.dy)}
+                                :bottom {:x data.ball.position.x
+                                         :y (- data.brick.position.y data.ball-dim.height 1)
+                                         :dx data.ball.position.dx
+                                         :dy (- 0 data.ball.position.dy)}
+                                :left {:x (+ 1 data.brick.position.x data.brick-dim.width)
+                                       :y data.ball.position.y
+                                       :dx (- 0 data.ball.position.dx)
+                                       :dy data.ball.position.dy}
+                                :right {:x (- data.brick.position.x data.ball-dim.width 1)
+                                        :y data.ball.position.y
+                                        :dx (- 0 data.ball.position.dx)
+                                        :dy data.ball.position.dy}
+                                _ data.ball.position)]
+        {:ball {:position new-ball-position}
+         :brick {:invisible? invisible?
                  :tier (if invisible? data.brick.tier new-tier)
                  :hello :foo
                  :id data.brick.id}})
