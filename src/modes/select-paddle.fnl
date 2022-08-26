@@ -100,8 +100,7 @@
 
     (or (= key :enter) 
         (= key :return))
-    (set-mode :serve {:level 1
-                      :level-number 1
+    (set-mode :serve {:level-number 1
                       :assets state.assets
                       :quads state.quads
                       :paddle state.paddle})

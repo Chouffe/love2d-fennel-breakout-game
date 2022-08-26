@@ -12,7 +12,7 @@
 (local game-logic (require :src.game-logic.core))
 
 ;; TODO: change to var when done developping
-(global state 
+(var state 
   {:debug false
    :paused? false
    :balls-left 1
@@ -24,7 +24,8 @@
    :assets {}})
 
 (fn draw []
-  (let [{: assets : quads : level-number} state 
+  (let [
+        {: assets : quads : level-number} state 
         {: images : fonts} assets]
     ;; Draw all elements in the scene
     (util-render.draw-background-image images)
@@ -239,9 +240,11 @@
         (update-game-state {: entities : quads : dt})))))
 
 (fn activate [{: level-number : assets : quads : entities}]
-  (set state.quads quads)
-  (set state.assets assets)
-  (set state.entities entities))
+  (let [initial-state {: quads : assets : entities : level-number
+                       :debug false
+                       :paused? false
+                       :balls-left 1}]
+    (set state initial-state)))
 
 (fn keypressed [key set-mode]
   (if 

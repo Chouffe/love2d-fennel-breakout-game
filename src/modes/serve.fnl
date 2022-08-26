@@ -25,11 +25,11 @@
   (love.graphics.printf (.. "Press Enter to serve") 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center))
 
 (fn draw []
-  (let [{: assets : quads : level-number} state 
+  (let [{: assets : quads : level-number : entities} state 
         {: images : fonts} assets]
     ;; Draw all elements in the scene
     (util-render.draw-background-image images)
-    (entity-render.draw-entities {: images : quads :entities state.entities})
+    (entity-render.draw-entities {: images : quads : entities}) 
     (draw-instructions {: fonts})
     (util-render.draw-level-number {: fonts : level-number})
     (when (. state :debug)
@@ -41,9 +41,11 @@
       (set entity.id entity-id)
       entity)))
 
-(fn initialize-entities [{: state : level-number : paddle : quads : assets}]
+(fn initialize-entities [{: level-number : paddle : quads : assets}]
   (let [{: entities} (level.level-number->level-data level-number)
         brick-entities (lume.filter entities (fn [{: entity-type}] (= :brick entity-type)))]
+    (print ">>> ENTITIES")
+    (print (pp entities))
     (each [_ entity (pairs entities)]
       (add-entity-id! entity))
 
@@ -57,28 +59,22 @@
                           :position {:x (/ (- config.VIRTUAL_WIDTH ball-dim.width) 2) 
                                      :y (- config.VIRTUAL_HEIGHT paddle-dim.height ball-dim.height 1) 
                                      :dx -80
-                                     :dy -50}})]
-      (set state.entities.indexed-balls (util-coll.index-by :id [initial-ball])))
-
-    ;; Bricks
-    (set state.entities.indexed-bricks (util-coll.index-by :id brick-entities))
-    (set state.level-number level-number))
-
-  ;; Paddle
-  (let [{: width : height} (entity.paddle-dimensions {:paddle paddle :quads quads})
-        default-paddle-speed config.GAMEPLAY.DEFAULT_PADDLE_SPEED
-        default-paddle-position {:x (/ (- config.VIRTUAL_WIDTH width) 2) 
-                                 :y (- config.VIRTUAL_HEIGHT height)}
-        initial-paddle (lume.merge paddle {:entity-type :paddle
-                                           :position default-paddle-position 
-                                           :speed config.GAMEPLAY.DEFAULT_PADDLE_SPEED})
-        indexed-paddles (util-coll.index-by :id [(add-entity-id! initial-paddle)])]
-    (set state.entities.indexed-paddles indexed-paddles)))
+                                     :dy -50}})
+          default-paddle-speed config.GAMEPLAY.DEFAULT_PADDLE_SPEED
+          default-paddle-position {:x (/ (- config.VIRTUAL_WIDTH paddle-dim.width) 2) 
+                                   :y (- config.VIRTUAL_HEIGHT paddle-dim.height)}
+          initial-paddle (lume.merge paddle {:entity-type :paddle
+                                             :position default-paddle-position 
+                                             :speed config.GAMEPLAY.DEFAULT_PADDLE_SPEED})
+          indexed-paddles (util-coll.index-by :id [(add-entity-id! initial-paddle)])]
+      {:indexed-balls (util-coll.index-by :id [initial-ball])
+       :indexed-bricks (util-coll.index-by :id brick-entities)
+       :indexed-paddles indexed-paddles})))
 
 (fn activate [{: level-number : assets : quads : paddle}]
-  (set state.quads quads)
-  (set state.assets assets)
-  (initialize-entities {: state : paddle : quads : assets : level-number}))
+  (let [entities (initialize-entities {: paddle : quads : assets : level-number})
+        initial-state {: quads : assets : level-number : entities}]
+    (global state initial-state)))
 
 (fn keypressed [key set-mode]
   (if 

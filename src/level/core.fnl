@@ -94,6 +94,7 @@
     {: matrix : entities : x0 : y0}))
 
 (comment 
+  (level-number->level-data 2)
   (level-number->level-data 1))
 
 {: level-number->level-data}
