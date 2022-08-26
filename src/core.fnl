@@ -62,6 +62,14 @@
     (let [mode (modes.get-mode)]
       (safely #(mode.keypressed key modes.set-mode)))))
 
+(fn love.keyreleased [key]
+  (print (.. ">>> key released " key))
+
+  ;; add what each keyreleased should do in each mode
+  (let [mode (modes.get-mode)]
+    (when mode.keyreleased
+      (safely #(mode.keyreleased key modes.set-mode)))))
+
 (comment 
   ;; REPL driven for hot reloading a mode
   ;; 1. First evaluate the whole buffer

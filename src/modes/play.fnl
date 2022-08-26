@@ -50,11 +50,9 @@
   (let [{: quads} state
         {: speed : position} paddle
         {: x} (if resolved-collisions resolved-collisions.position position)
-        key (if 
-              (love.keyboard.isDown :left) :left
-              (love.keyboard.isDown :right) :right
-              nil)]
-    (set paddle.position.x (handle-keyboard {:speed speed :x x :dt dt :key key}))))
+        new-x (+ x (* dt (or position.dx 0)))]
+    (set paddle.position.x new-x)))
+    ; (set paddle.position.x (handle-keyboard {:speed speed :x x :dt dt :key key}))))
 
 (fn detect-collisions [{: bricks : ball : paddle : quads : dt}]
   (let [paddle-dim (entity.paddle-dimensions {:paddle paddle :quads quads})
@@ -241,21 +239,34 @@
     (set state initial-state)))
 
 (fn keypressed [key set-mode]
-  (if 
-    ;; Quit
-    (= key :escape)
-    (love.event.quit)
+  (let [paddle (lume.first (util-coll.vals state.entities.indexed-paddles))]
+    (if 
+      ;; Quit
+      (= key :escape)
+      (love.event.quit)
 
-    ;; Pause
-    (= key "p")
-    (do
-      (: (. state.assets.sounds :pause) :play)
-      (set state.paused? (not state.paused?)))
+      (= key :left)
+      (set paddle.position.dx (- 0 config.GAMEPLAY.DEFAULT_PADDLE_SPEED))
 
-    ;; Debug
-    (= key "d")
-    (do
-      (set state.debug (not state.debug))
-      (print (fennel.view state)))))
+      (= key :right)
+      (set paddle.position.dx config.GAMEPLAY.DEFAULT_PADDLE_SPEED)
 
-{: draw : update : activate : keypressed}
+      ;; Pause
+      (= key "p")
+      (do
+        (: (. state.assets.sounds :pause) :play)
+        (set state.paused? (not state.paused?)))
+
+      ;; Debug
+      (= key "d")
+      (do
+        (set state.debug (not state.debug))
+        (print (fennel.view state))))))
+
+(fn keyreleased [key set-mode]
+  (let [paddle (lume.first (util-coll.vals state.entities.indexed-paddles))]
+    (if 
+      (or (= key :right) (= key :left))
+      (set paddle.position.dx 0))))
+
+{: draw : update : activate : keypressed : keyreleased}

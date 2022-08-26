@@ -10,7 +10,6 @@
 (local util-coll (require :src.util.coll))
 (local util-render (require :src.util.render))
 
-;; TODO: change to var when done developping
 (var state 
   {:debug false
    :level-number 1
@@ -23,7 +22,7 @@
 (fn draw-instructions [{: fonts}]
   (util-render.draw-black-overlay)
   (love.graphics.setFont (. fonts :medium))
-  (love.graphics.printf (.. "Press Enter to serve") 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center))
+  (love.graphics.printf "Press Enter to serve" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center))
 
 (fn draw []
   (let [{: assets : quads : level-number : entities} state 
