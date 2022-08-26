@@ -1,6 +1,5 @@
 # TODO
 
-* Move the paddle with a dx value
 * Move width and heigh of entities in their maps
 * Generate levels with some randomness
 * Make it possible to control the ball with the paddle
