@@ -6,6 +6,7 @@
 (import-macros cljm :cljlib)
 
 (local assets (require :src.assets.core))
+(local quads (require :src.assets.quads))
 (local config (require :src.config))
 (local modes (require :src.modes.core))
 
@@ -19,8 +20,10 @@
     {:vsync true
      :fullscreen false
      :resizable true})
-  (let [loaded-assets (assets.load-assets)]
-    (modes.set-mode :start {:assets loaded-assets}))
+  (let [loaded-assets (assets.load-assets)
+        loaded-quads (quads.load-quads loaded-assets.images)]
+    (print loaded-quads)
+    (modes.set-mode :start {:assets loaded-assets :quads loaded-quads}))
   (when (~= :web (. args 1)) (repl.start)))
 
 (fn safely [f]

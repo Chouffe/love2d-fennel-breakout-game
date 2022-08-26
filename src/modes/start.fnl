@@ -4,6 +4,7 @@
 (global state 
   {:debug true
    :highlighted :play
+   :quads {}
    :assets {}})
 
 (fn draw-title [fonts]
@@ -55,9 +56,10 @@
 
 (fn update [dt set-mode])
 
-(fn activate [{: assets}]
+(fn activate [{: assets : quads}]
   ; (assets.sounds.music:setLooping true)
   ; (assets.sounds.music:play)
+  (set state.quads quads)
   (set state.assets assets))
 
 (fn keypressed [key set-mode]
@@ -66,7 +68,7 @@
     (love.event.quit)
 
     (or (= key :enter) (= key :return))
-    (set-mode :select-paddle {:assets state.assets})
+    (set-mode :select-paddle {:assets state.assets :quads state.quads})
 
     (= key :up)
     (do

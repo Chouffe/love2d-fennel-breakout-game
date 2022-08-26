@@ -21,23 +21,9 @@
 
 (global state 
   {:debug false
-   :paddle {:skin :blue
-            :size-type :medium}
+   :paddle {}
    :quads {}
    :assets {}})
-
-(fn draw-background-image [images]
-  (let [background-image (. images :background)
-        (width height) (background-image:getDimensions)]
-    (love.graphics.draw 
-      background-image 
-      ;; Draw at coordinates 0 0
-      0 0 
-      ;; No rotation
-      0 
-      ;; Scale factors on X and Y axis so that it fits the whole screen
-      (/ config.VIRTUAL_WIDTH (- width 1)) 
-      (/ config.VIRTUAL_HEIGHT (- height 1)))))
 
 (fn draw-title [ {: fonts}]
   (love.graphics.setFont (. fonts :medium))
@@ -100,9 +86,10 @@
   (when (. state :debug)
     (util-render.draw-fps state.assets.fonts.small)))
 
-(fn activate [{: assets}]
-  (let [loaded-quads (quads.load-quads (. assets :images))] 
-    (set state.quads loaded-quads))
+(fn activate [{: assets : quads : paddle}]
+  (let [initial-paddle {:skin :blue :size-type :medium}]
+    (set state.paddle (if paddle paddle initial-paddle)))
+  (set state.quads quads)
   (set state.assets assets))
 
 (fn keypressed [key set-mode]

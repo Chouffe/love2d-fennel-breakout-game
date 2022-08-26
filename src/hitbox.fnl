@@ -55,6 +55,7 @@
 
 (comment
 
+  ;; Straight directions
   (impact-details
     {:pos1 {:x 0 :y 0 :width 1 :height 1 :dx 1 :dy 0}
      :pos2 {:x 1 :y 0 :width 1 :height 1 :dx 0 :dy 0}
@@ -73,7 +74,27 @@
   (impact-details
     {:pos1 {:x 0 :y 1 :width 1 :height 1 :dx 0 :dy -1}
      :pos2 {:x 0 :y 0 :width 1 :height 1 :dx 0 :dy 0}
-     :dt 0.01}))
+     :dt 0.01})
 
+  ;; Diagonals
+  (impact-details
+    {:pos1 {:x 1 :y 1 :width 1 :height 1 :dx -1 :dy -1}
+     :pos2 {:x 0 :y 0 :width 1 :height 1 :dx 0 :dy 0}
+     :dt 0.01})
+
+  (impact-details
+    {:pos1 {:x 0 :y 0 :width 1 :height 1 :dx 1 :dy 1}
+     :pos2 {:x 1 :y 1 :width 1 :height 1 :dx 0 :dy 0}
+     :dt 0.01})
+
+  (impact-details
+    {:pos1 {:x 0 :y 1 :width 1 :height 1 :dx 1 :dy 1}
+     :pos2 {:x 1 :y 0 :width 1 :height 1 :dx 0 :dy 0}
+     :dt 0.01})
+
+  (impact-details
+    {:pos1 {:x 1 :y 0 :width 1 :height 1 :dx -1 :dy 1}
+     :pos2 {:x 0 :y 1 :width 1 :height 1 :dx 0 :dy 0}
+     :dt 0.01}))
 
 {: collides : impact-details}

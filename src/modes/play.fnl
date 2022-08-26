@@ -227,10 +227,13 @@
         (set-mode :select-paddle {:assets (. state :assets)}))
 
       (game-logic.game-won? {: entities})
-      (do
-        (print "You won the GAME!")
-        (print (fennel.view state))
-        (set-mode :select-paddle {:assets (. state :assets)}))
+      (let [paddle (-> state.entities.indexed-paddles
+                       (util-coll.vals)
+                       (lume.first))]
+        (set-mode :level-cleared {:quads state.quads
+                                  :paddle paddle
+                                  :assets state.assets
+                                  :level-number state.level-number}))
 
       (when (not paused?)
         (update-game-state {: entities : quads : dt})))))

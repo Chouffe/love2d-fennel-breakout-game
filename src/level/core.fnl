@@ -3,6 +3,33 @@
 
 ;; TODO: add other level-matrices
 (local level-matrix-1
+  [[{:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}]
+   [{:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}]
+   [{:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}]
+   [{:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :void}]
+   [{:cell-type :void}
+    {:cell-type :void}
+    {:cell-type :brick :color :purple :tier 2} 
+    {:cell-type :void}
+    {:cell-type :void}]])
+
+(local level-matrix-2
   [[{:cell-type :brick :color :blue :tier 1} 
     {:cell-type :brick :color :blue :tier 2} 
     {:cell-type :void}
@@ -52,8 +79,11 @@
          :height cell-height}))))
 
 ;; TODO: find a way to do it functionally instead
-(fn level-number->level-data [level]
-  (let [matrix level-matrix-1
+(fn level-number->level-data [level-number]
+  (let [matrix (match level-number
+                 1 level-matrix-1
+                 2 level-matrix-2
+                 _ level-matrix-2)
         [x0 y0] [30 40]
         entities []]
     (each [y-index v (pairs matrix)]
