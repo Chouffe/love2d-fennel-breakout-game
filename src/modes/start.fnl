@@ -53,8 +53,6 @@
   (when (. state :debug)
     (util-render.draw-fps state.assets.fonts.small)))
 
-(fn update [dt set-mode])
-
 (fn activate [{: assets : quads}]
   (let [initial-state {: quads : assets :highlighted :play}]
     (set state initial-state))
@@ -79,4 +77,4 @@
       (: (. state.assets.sounds :paddle-hit) :play)
       (set state.highlighted :high-scores))))
 
-{: draw : update : activate : keypressed}
+{: draw : activate : keypressed}
