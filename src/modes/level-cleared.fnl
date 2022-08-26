@@ -35,10 +35,10 @@
     (love.event.quit)
 
     (or (= key :enter) (= key :return))
-    (set-mode :select-paddle {:level-number (+ state.level-number 1)
-                              :paddle state.paddle
-                              :assets state.assets
-                              :quads state.quads})))
+    (set-mode :serve {:level-number (+ state.level-number 1)
+                      :paddle state.paddle
+                      :assets state.assets
+                      :quads state.quads})))
 
 {: draw : activate : keypressed}
 

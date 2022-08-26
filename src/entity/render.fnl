@@ -1,6 +1,7 @@
 (local entity (require :src.entity.core))
 (local util-coll (require :src.util.coll))
 
+;; TODO: move this to an ECS system instead
 (fn draw-paddle [{: paddle : images : quads}]
   (let [{: size-type : skin : position} paddle 
         {: x : y} position
