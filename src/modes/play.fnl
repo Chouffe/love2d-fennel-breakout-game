@@ -34,7 +34,6 @@
       ;; No rotation
       0 
       ;; Scale factors on X and Y axis so that it fits the whole screen
-      (/ config.VIRTUAL_WIDTH (- width 1)) 
       (/ config.VIRTUAL_HEIGHT (- height 1)))))
 
 (fn draw-paddle [{: paddle : images : quads}]
@@ -121,7 +120,7 @@
               nil)]
     (set paddle.position.x (handle-keyboard {:speed speed :x x :dt dt :key key}))))
 
-(fn detect-collisions [{: bricks : ball : paddle : quads}]
+(fn detect-collisions [{: bricks : ball : paddle : quads : dt}]
   (let [paddle-dim (entity.paddle-dimensions {:paddle paddle :quads quads})
         ball-dim (entity.ball-dimensions {:ball ball :quads quads})
         ;; TODO: dimensions should live on entities not here
@@ -144,18 +143,26 @@
 
     (each [_ brick (pairs bricks)]
       (when (not brick.invisible?)
-        (when (hitbox.collides 
-                {:x brick.position.x 
-                 :y brick.position.y 
-                 :width brick.width
-                 :height brick.height}
-                {:x ball.position.x 
-                 :y ball.position.y 
-                 :width ball-dim.width 
-                 :height ball-dim.height})
-          (let [collision-data (lume.merge data {:brick brick})]
-            ;; TODO: add ball bouncing here
-            (table.insert collisions {:collision-type :ball-brick :data collision-data})))))
+        (let [pos1 {:x ball.position.x 
+                    :y ball.position.y 
+                    :dx ball.position.dx
+                    :dy ball.position.dy
+                    :width ball-dim.width 
+                    :height ball-dim.height}
+              pos2 {:x brick.position.x 
+                    :y brick.position.y 
+                    :dx 0
+                    :dy 0
+                    :width brick.width
+                    :height brick.height}]
+          (when (hitbox.collides pos1 pos2)
+            (let [impact-details (hitbox.impact-details {: pos1 : pos2 : dt})
+                  collision-data (lume.merge data {:brick brick
+                                                   :ball-impact impact-details.impact-entity-1
+                                                   :brick-impact impact-details.impact-entity-2})]
+              ;; TODO: add ball bouncing here
+              (print (pp collision-data))
+              (table.insert collisions {:collision-type :ball-brick :data collision-data}))))))
 
     ;; Ball collision with paddle
     (when (hitbox.collides 
@@ -250,7 +257,7 @@
         ball (lume.first (util-coll.vals state.entities.indexed-balls))
         {: indexed-bricks} entities
         bricks (util-coll.vals indexed-bricks)
-        collisions (detect-collisions {: ball : paddle : quads : bricks})
+        collisions (detect-collisions {: ball : paddle : quads : bricks : dt})
         ;; TODO: this should aggregate and not take only the last event
         resolved-collisions (-> collisions
                                 (lume.map handle-collision)
