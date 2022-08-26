@@ -273,6 +273,10 @@
       ;; Pause
       (= key "p")
       (do
+        (if (not state.paused?)
+           (love.audio.pause)
+           (state.assets.sounds.music:play))
+          
         (: (. state.assets.sounds :pause) :play)
         (set state.paused? (not state.paused?)))
 
