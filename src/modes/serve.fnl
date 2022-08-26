@@ -11,7 +11,7 @@
 (local util-render (require :src.util.render))
 
 ;; TODO: change to var when done developping
-(global state 
+(var state 
   {:debug false
    :level-number 1
    :entities {:indexed-bricks {} 
@@ -72,7 +72,7 @@
 (fn activate [{: level-number : assets : quads : paddle}]
   (let [entities (initialize-entities {: paddle : quads : assets : level-number})
         initial-state {: quads : assets : level-number : entities}]
-    (global state initial-state)))
+    (set state initial-state)))
 
 (fn keypressed [key set-mode]
   (if 
