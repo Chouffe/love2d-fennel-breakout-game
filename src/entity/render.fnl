@@ -1,8 +1,4 @@
-(local fennel (require :lib.fennel))
-
-(local config (require :src.config))
-(local entity (require :src.entity))
-(local quads (require :src.quads))
+(local entity (require :src.entity.core))
 (local util-coll (require :src.util.coll))
 
 (fn draw-paddle [{: paddle : images : quads}]
