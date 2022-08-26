@@ -4,7 +4,7 @@
 (local quads (require :src.assets.quads))
 (local util-render (require :src.util.render))
 
-(global state 
+(var state 
   {:debug false
    :level-number 1
    :paddle {}
@@ -26,7 +26,7 @@
 
 (fn activate [{: assets : quads : paddle : level-number}]
   (let [initial-state {: quads : paddle : assets : level-number}]
-    (global state initial-state)))
+    (set state initial-state)))
 
 (fn keypressed [key set-mode]
   (if 
