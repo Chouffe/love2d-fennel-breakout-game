@@ -1,4 +1,3 @@
-(local fennel (require :lib.fennel))
 (local lume (require :lib.lume))
 (local config (require :src.config))
 

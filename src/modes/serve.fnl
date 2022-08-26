@@ -6,7 +6,7 @@
 (local entity-render (require :src.entity.render))
 (local quads (require :src.assets.quads))
 (local hitbox (require :src.hitbox))
-(local level (require :src.level))
+(local level (require :src.level.core))
 (local util-coll (require :src.util.coll))
 (local util-render (require :src.util.render))
 
