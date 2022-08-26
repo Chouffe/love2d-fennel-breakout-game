@@ -358,7 +358,6 @@
   (set state.quads quads)
   (set state.assets assets)
   (set state.entities entities))
-  ; (initialize-entities {: state : paddle : quads : assets : level-number}))
 
 (fn keypressed [key set-mode]
   (if 
@@ -378,7 +377,4 @@
       (set state.debug (not state.debug))
       (print (fennel.view state)))))
 
-{: draw 
- : update 
- : activate 
- : keypressed}
+{: draw : update : activate : keypressed}
