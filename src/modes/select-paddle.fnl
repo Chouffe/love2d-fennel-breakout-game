@@ -102,23 +102,31 @@
 
     (or (= key :enter) 
         (= key :return))
-    (set-mode :serve {:level-number state.level-number
-                      :assets state.assets
-                      :quads state.quads
-                      :paddle state.paddle})
+    (do
+      (state.assets.sounds.confirm:play)
+      (set-mode :serve {:level-number state.level-number
+                        :assets state.assets
+                        :quads state.quads
+                        :paddle state.paddle}))
 
     ;; TODO: add the sound effect
     (= key "right")
     (let [new-skin (next-paddle-skin paddle-skin-order state.paddle.skin)]
-      (when new-skin
-        (set state.paddle.skin new-skin)))
+      (if new-skin
+        (do
+          (state.assets.sounds.select:play)
+          (set state.paddle.skin new-skin))
+        (state.assets.sounds.no-select:play)))
     
 
     ;; TODO: add the sound effect
     (= key "left")
     (let [new-skin (previous-paddle-skin paddle-skin-order state.paddle.skin)]
-      (when new-skin
-        (set state.paddle.skin new-skin)))
+      (if new-skin
+        (do
+          (state.assets.sounds.select:play)
+          (set state.paddle.skin new-skin))
+        (state.assets.sounds.no-select:play)))
 
     ;; Debug
     (= key "d")
