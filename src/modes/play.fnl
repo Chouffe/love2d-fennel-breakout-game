@@ -327,10 +327,16 @@
       (add-entity-id! entity))
 
     ;; Start with one ball only
-    (let [initial-ball (add-entity-id! 
+    (let [;; Needs to sit on the paddle
+          paddle-dim (entity.paddle-dimensions {:paddle paddle :quads quads})
+          ball-dim (entity.ball-dimensions {:ball {} : quads})
+          initial-ball (add-entity-id! 
                          {:entity-type :ball 
                           :skin :blue 
-                          :position {:x 80 :y 80 :dx -200 :dy -100}})]
+                          :position {:x (/ (- config.VIRTUAL_WIDTH ball-dim.width) 2) 
+                                     :y (- config.VIRTUAL_HEIGHT paddle-dim.height ball-dim.height 1) 
+                                     :dx -80
+                                     :dy -50}})]
       (set state.entities.indexed-balls (util-coll.index-by :id [initial-ball])))
 
     ;; Bricks
