@@ -86,11 +86,13 @@
   (when (. state :debug)
     (util-render.draw-fps state.assets.fonts.small)))
 
-(fn activate [{: assets : quads : paddle}]
-  (let [initial-paddle {:skin :blue :size-type :medium}]
-    (set state.paddle (if paddle paddle initial-paddle)))
-  (set state.quads quads)
-  (set state.assets assets))
+(fn activate [{: assets : quads : paddle : level-number}]
+  (let [default-paddle {:skin :blue :size-type :medium}
+        default-level-number 1
+        initial-state {: assets : quads : paddle 
+                       :level-number (or level-number default-level-number)
+                       :paddle (or paddle default-paddle)}]
+    (global state initial-state)))
 
 (fn keypressed [key set-mode]
   (if 
@@ -100,7 +102,7 @@
 
     (or (= key :enter) 
         (= key :return))
-    (set-mode :serve {:level-number 1
+    (set-mode :serve {:level-number state.level-number
                       :assets state.assets
                       :quads state.quads
                       :paddle state.paddle})

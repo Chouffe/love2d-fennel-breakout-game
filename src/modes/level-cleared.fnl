@@ -24,10 +24,9 @@
   (when (. state :debug)
     (util-render.draw-fps state.assets.fonts.small)))
 
-(fn activate [{: assets : quads : paddle}]
-  (set state.paddle paddle)
-  (set state.quads quads)
-  (set state.assets assets))
+(fn activate [{: assets : quads : paddle : level-number}]
+  (let [initial-state {: quads : paddle : assets : level-number}]
+    (global state initial-state)))
 
 (fn keypressed [key set-mode]
   (if 
