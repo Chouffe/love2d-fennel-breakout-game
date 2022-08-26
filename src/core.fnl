@@ -5,8 +5,7 @@
 (local clj (require :cljlib))
 (import-macros cljm :cljlib)
 
-(local assets (require :src.assets))
-(local quads (require :src.quads))
+(local assets (require :src.assets.core))
 (local config (require :src.config))
 (local modes (require :src.modes.core))
 

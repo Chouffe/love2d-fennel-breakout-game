@@ -1,7 +1,7 @@
 (local lume (require :lib.lume))
 
-(local assets (require :src.assets))
-(local quads (require :src.quads))
+(local assets (require :src.assets.core))
+(local quads (require :src.assets.quads))
 
 (var (mode mode-name) nil)
 
