@@ -4,13 +4,11 @@
 (local config (require :src.config))
 (local debug (require :src.debug))
 (local entity (require :src.entity))
+(local entity-render (require :src.entity.render))
 (local quads (require :src.quads))
 (local hitbox (require :src.hitbox))
 (local level (require :src.level))
 (local util-coll (require :src.util.coll))
-
-(local paddle-color-order 
-  [:blue :green :red :purple])
 
 ;; TODO: change to var when done developping
 (global state 
@@ -36,56 +34,11 @@
       ;; Scale factors on X and Y axis so that it fits the whole screen
       (/ config.VIRTUAL_HEIGHT (- height 1)))))
 
-(fn draw-paddle [{: paddle : images : quads}]
-  (let [{: size-type : skin : position} paddle 
-        {: x : y} position
-        {: width : height} (entity.paddle-dimensions {:paddle paddle :quads quads})
-        atlas (. images :main)
-        quad (. (. quads.paddles skin) size-type)]
-    (love.graphics.draw atlas quad x y)))
-
-(fn draw-paddles [{: images : quads : paddles}]
-  (each [_ paddle (pairs paddles)]
-    (draw-paddle {: paddle : images : quads}))) 
-
-(fn draw-ball [{: ball : images : quads}]
-  (let [{: skin : position} ball 
-        {: x : y} position
-        {: width : height} (entity.ball-dimensions {:ball ball :quads quads})
-        atlas (. images :main)
-        quad (. quads.balls skin)]
-    (love.graphics.draw atlas quad x y)))
-
-(fn draw-balls [{: images : quads : balls}]
-  (each [_ ball (pairs balls)]
-    (draw-ball {: ball : images : quads}))) 
-  
 (fn draw-pause [fonts]
   (love.graphics.setFont (. fonts :large))
   (love.graphics.printf "Game paused" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center)
   (love.graphics.setFont (. fonts :medium))
   (love.graphics.printf "Press p to resume" 0 (+ (/ config.VIRTUAL_HEIGHT 3) 35) config.VIRTUAL_WIDTH :center))
-
-(fn draw-brick [{: images : quads : brick}]
-  (let [{: visible? : position : width : height : color : tier} brick
-        {: x : y} position
-        quad (. (. quads.bricks color) tier)
-        atlas (. images :main)]
-    (when visible?
-      (love.graphics.draw atlas quad x y))))
-
-(fn draw-bricks [{: images : quads : bricks}]
-  (each [_ brick (pairs bricks)]
-    (when (not (?. brick :invisible?))
-      (draw-brick {: brick : images : quads})))) 
-
-(fn draw-entities [{: images : quads : entities}]
-  (let [bricks (util-coll.vals entities.indexed-bricks)
-        paddles (util-coll.vals entities.indexed-paddles)
-        balls (util-coll.vals entities.indexed-balls)]
-    (draw-bricks {: bricks : quads : images}) 
-    (draw-paddles {: paddles : images : quads})
-    (draw-balls {: balls : images : quads}))) 
 
 (fn draw []
   (let [images (. state.assets :images)
@@ -93,7 +46,7 @@
         quads (. state :quads)]
     ;; Draw all elements in the scene
     (draw-background-image images)
-    (draw-entities {: images : quads :entities state.entities})
+    (entity-render.draw-entities {: images : quads :entities state.entities})
     (when state.paused?
       (draw-pause fonts))
     (when (. state :debug)
@@ -259,7 +212,6 @@
       (when invisible?
         (set brick.invisible? invisible?))
       (set brick.tier tier))))
-    
 
 (fn update-ball [{: ball : dt : collisions : data-resolved-collisions : resolved-collisions}]
   (let [{: position : entity-id} ball
@@ -309,50 +261,6 @@
 
       (when (not paused?)
         (update-game-state {: entities : quads : dt})))))
-
-(comment
-  ;; For flushing REPL
-  (+ 1 2))
-
-(fn add-entity-id! [entity]
-  (let [entity-id (lume.uuid)]
-    (when (= :table (type entity))
-      (set entity.id entity-id)
-      entity)))
-
-(fn initialize-entities [{: state : level-number : paddle : quads : assets}]
-  (let [{: entities} (level.level-number->level-data level-number)
-        brick-entities (lume.filter entities (fn [{: entity-type}] (= :brick entity-type)))]
-    (each [_ entity (pairs entities)]
-      (add-entity-id! entity))
-
-    ;; Start with one ball only
-    (let [;; Needs to sit on the paddle
-          paddle-dim (entity.paddle-dimensions {:paddle paddle :quads quads})
-          ball-dim (entity.ball-dimensions {:ball {} : quads})
-          initial-ball (add-entity-id! 
-                         {:entity-type :ball 
-                          :skin :blue 
-                          :position {:x (/ (- config.VIRTUAL_WIDTH ball-dim.width) 2) 
-                                     :y (- config.VIRTUAL_HEIGHT paddle-dim.height ball-dim.height 1) 
-                                     :dx -80
-                                     :dy -50}})]
-      (set state.entities.indexed-balls (util-coll.index-by :id [initial-ball])))
-
-    ;; Bricks
-    (set state.entities.indexed-bricks (util-coll.index-by :id brick-entities))
-    (set state.level-number level-number))
-
-  ;; Paddle
-  (let [{: width : height} (entity.paddle-dimensions {:paddle paddle :quads quads})
-        default-paddle-speed config.GAMEPLAY.DEFAULT_PADDLE_SPEED
-        default-paddle-position {:x (/ (- config.VIRTUAL_WIDTH width) 2) 
-                                 :y (- config.VIRTUAL_HEIGHT height)}
-        initial-paddle (lume.merge paddle {:entity-type :paddle
-                                           :position default-paddle-position 
-                                           :speed config.GAMEPLAY.DEFAULT_PADDLE_SPEED})
-        indexed-paddles (util-coll.index-by :id [(add-entity-id! initial-paddle)])]
-    (set state.entities.indexed-paddles indexed-paddles)))
 
 (fn activate [{: level-number : assets : quads : entities}]
   (set state.quads quads)

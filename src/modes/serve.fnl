@@ -10,9 +10,6 @@
 (local level (require :src.level))
 (local util-coll (require :src.util.coll))
 
-(local paddle-color-order 
-  [:blue :green :red :purple])
-
 ;; TODO: change to var when done developping
 (global state 
   {:debug false
