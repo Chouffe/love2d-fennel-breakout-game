@@ -65,7 +65,9 @@
     (love.event.quit)
 
     (or (= key :enter) (= key :return))
-    (set-mode :select-paddle {:assets state.assets :quads state.quads})
+    (do
+      (state.assets.sounds.confirm:play)
+      (set-mode :select-paddle {:assets state.assets :quads state.quads}))
 
     (= key :up)
     (do
