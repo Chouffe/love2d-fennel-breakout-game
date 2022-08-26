@@ -9,6 +9,7 @@
 (local hitbox (require :src.hitbox))
 (local level (require :src.level))
 (local util-coll (require :src.util.coll))
+(local util-render (require :src.util.render))
 
 ;; TODO: change to var when done developping
 (global state 
@@ -20,27 +21,15 @@
    :quads {}
    :assets {}})
 
-(fn draw-background-image [images]
-  (let [background-image (. images :background)
-        (width height) (background-image:getDimensions)]
-    (love.graphics.draw 
-      background-image 
-      ;; Draw at coordinates 0 0
-      0 0 
-      ;; No rotation
-      0 
-      ;; Scale factors on X and Y axis so that it fits the whole screen
-      (/ config.VIRTUAL_HEIGHT (- height 1)))))
-
 (fn draw []
   (let [images (. state.assets :images)
         fonts (. state.assets :fonts)
         quads (. state :quads)]
     ;; Draw all elements in the scene
-    (draw-background-image images)
+    (util-render.draw-background-image images)
     (entity-render.draw-entities {: images : quads :entities state.entities})
     (when (. state :debug)
-      (debug.display-fps (. fonts :small)))))
+      (util-render.draw-fps (. fonts :small)))))
 
 (fn add-entity-id! [entity]
   (let [entity-id (lume.uuid)]

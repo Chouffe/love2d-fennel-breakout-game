@@ -9,6 +9,8 @@
 (local hitbox (require :src.hitbox))
 (local level (require :src.level))
 (local util-coll (require :src.util.coll))
+(local util-render (require :src.util.render))
+(local game-logic (require :src.game-logic.core))
 
 ;; TODO: change to var when done developping
 (global state 
@@ -22,35 +24,17 @@
    :quads {}
    :assets {}})
 
-(fn draw-background-image [images]
-  (let [background-image (. images :background)
-        (width height) (background-image:getDimensions)]
-    (love.graphics.draw 
-      background-image 
-      ;; Draw at coordinates 0 0
-      0 0 
-      ;; No rotation
-      0 
-      ;; Scale factors on X and Y axis so that it fits the whole screen
-      (/ config.VIRTUAL_HEIGHT (- height 1)))))
-
-(fn draw-pause [fonts]
-  (love.graphics.setFont (. fonts :large))
-  (love.graphics.printf "Game paused" 0 (/ config.VIRTUAL_HEIGHT 3) config.VIRTUAL_WIDTH :center)
-  (love.graphics.setFont (. fonts :medium))
-  (love.graphics.printf "Press p to resume" 0 (+ (/ config.VIRTUAL_HEIGHT 3) 35) config.VIRTUAL_WIDTH :center))
-
 (fn draw []
   (let [images (. state.assets :images)
         fonts (. state.assets :fonts)
         quads (. state :quads)]
     ;; Draw all elements in the scene
-    (draw-background-image images)
+    (util-render.draw-background-image images)
     (entity-render.draw-entities {: images : quads :entities state.entities})
     (when state.paused?
-      (draw-pause fonts))
+      (util-render.draw-pause fonts))
     (when (. state :debug)
-      (debug.display-fps (. fonts :small)))))
+      (util-render.draw-fps (. fonts :small)))))
 
 ;; TODO: move to a paddle namespace?
 (fn handle-keyboard [{: x : speed : dt : key}]
@@ -119,8 +103,6 @@
                   collision-data (lume.merge data {:brick brick
                                                    :ball-impact impact-details.impact-entity-1
                                                    :brick-impact impact-details.impact-entity-2})]
-              ;; TODO: add ball bouncing here
-              (print (pp collision-data))
               (table.insert collisions {:collision-type :ball-brick :data collision-data}))))))
 
     ;; Ball collision with paddle
@@ -221,14 +203,6 @@
         new-position {:x new-x :y new-y :dx dx :dy dy}]
     (set ball.position new-position)))
 
-(fn game-over? [{: balls-left}]
-  (<= balls-left 0))
-
-(fn game-won? [{: entities}]
-  (-> entities.indexed-bricks
-      (util-coll.vals)
-      (lume.all (fn [{: invisible?}] invisible?))))
-
 (fn update-game-state [{: dt : entities : quads}]
   (let [paddle (lume.first (util-coll.vals state.entities.indexed-paddles))
         ball (lume.first (util-coll.vals state.entities.indexed-balls))
@@ -248,12 +222,12 @@
 (fn update [dt set-mode]
   (let [{: quads : entities : balls-left : paused?} state]
     (if 
-      (game-over? {: balls-left})
+      (game-logic.game-over? {: balls-left})
       (do
         (print (fennel.view state))
         (set-mode :select-paddle {:assets (. state :assets)}))
 
-      (game-won? {: entities})
+      (game-logic.game-won? {: entities})
       (do
         (print "You won the GAME!")
         (print (fennel.view state))
