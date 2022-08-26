@@ -19,7 +19,7 @@
       (>= index (length paddle-skin-order)) nil
       (. paddle-skin-order (+ index 1)))))
 
-(global state 
+(var state 
   {:debug false
    :paddle {}
    :quads {}
@@ -92,7 +92,7 @@
         initial-state {: assets : quads : paddle 
                        :level-number (or level-number default-level-number)
                        :paddle (or paddle default-paddle)}]
-    (global state initial-state)))
+    (set state initial-state)))
 
 (fn keypressed [key set-mode]
   (if 
