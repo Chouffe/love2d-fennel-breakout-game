@@ -354,10 +354,11 @@
         indexed-paddles (util-coll.index-by :id [(add-entity-id! initial-paddle)])]
     (set state.entities.indexed-paddles indexed-paddles)))
 
-(fn activate [{: level-number : assets : quads : paddle}]
+(fn activate [{: level-number : assets : quads : entities}]
   (set state.quads quads)
   (set state.assets assets)
-  (initialize-entities {: state : paddle : quads : assets : level-number}))
+  (set state.entities entities))
+  ; (initialize-entities {: state : paddle : quads : assets : level-number}))
 
 (fn keypressed [key set-mode]
   (if 

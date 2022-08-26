@@ -144,11 +144,11 @@
     (love.event.quit)
 
     (or (= key :enter) (= key :return))
-    (set-mode :play {:level 1
-                     :level-number 1
-                     :assets state.assets
-                     :quads state.quads
-                     :paddle state.paddle})
+    (set-mode :serve {:level 1
+                      :level-number 1
+                      :assets state.assets
+                      :quads state.quads
+                      :paddle state.paddle})
 
     ;; TODO: add the sound effect
     (= key "right")
