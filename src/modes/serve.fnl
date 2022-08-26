@@ -44,8 +44,6 @@
 (fn initialize-entities [{: level-number : paddle : quads : assets}]
   (let [{: entities} (level.level-number->level-data level-number)
         brick-entities (lume.filter entities (fn [{: entity-type}] (= :brick entity-type)))]
-    (print ">>> ENTITIES")
-    (print (pp entities))
     (each [_ entity (pairs entities)]
       (add-entity-id! entity))
 
