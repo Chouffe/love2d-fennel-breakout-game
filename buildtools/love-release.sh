@@ -832,8 +832,10 @@ if [[ -n $ICON ]]; then
             ICON=
         else
             RESHACKER="$WINEPREFIX/drive_c/Program Files (x86)/Resource Hacker/ResourceHacker.exe"
+            # Alternative: Resource Cracker https://www.pelock.com/download/resource-cracker.exe
             if [[ ! -f $RESHACKER ]]; then
                 curl -L -C - -o "$WINEPREFIX/drive_c/reshacker_setup.exe" "http://www.angusj.com/resourcehacker/reshacker_setup.exe"
+                # Alternative: Resource Cracker https://www.pelock.com/download/resource-cracker.exe
                 WINEPREFIX="$WINEPREFIX" wine "$WINEPREFIX/drive_c/reshacker_setup.exe" 2>&1 /dev/null
             fi
         fi
